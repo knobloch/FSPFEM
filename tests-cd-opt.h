@@ -883,41 +883,7 @@ INT x, p;     /* x + factor*p should be nonnegative as well */
 
 #if (E_DATA & SCALAR_ELEMENT_DATA) && (PAR_TYPE == Q_SE)
 
-void take_positive_part(tGrid,x)
-GRID *tGrid;
-INT x;
-{
-   ELEMENT *pel;
-
-   for (pel = FIRSTELEMENT(tGrid); pel; pel = pel->succ){
-      if (ED(pel,x) < 0.)
-         ED(pel,x) = 0.;
-/*
-      if (ED(pel,x) > ED(pel,W))
-         ED(pel,x) = ED(pel,W);
-*/
-   }
-}
-
 #elif (E_DATA & VECTOR_ELEMENT_DATA) && (PAR_TYPE == Q_VE)
-
-void take_positive_part(tGrid,x)
-GRID *tGrid;
-INT x;
-{
-   ELEMENT *pel;
-
-   for (pel = FIRSTELEMENT(tGrid); pel; pel = pel->succ){
-      if (EDV(pel,x,0) < 0.)
-         EDV(pel,x,0) = 0.;
-      if (EDV(pel,x,1) < 0.)
-         EDV(pel,x,1) = 0.;
-      if (EDV(pel,x,0) > EDV(pel,W,0))
-         EDV(pel,x,0) = EDV(pel,W,0);
-      if (EDV(pel,x,1) > 1.)
-         EDV(pel,x,1) = 1.;
-   }
-}
 
 void compute_scaling_par(tGrid,x)
 GRID *tGrid;
@@ -1002,10 +968,6 @@ INT x, y;
 
 #else
 
-void take_positive_part(tGrid,x)
-GRID *tGrid; INT x;
-{  eprintf("Error: take_positive_part not available.\n");  }
-
 #endif
 
 void simple_opt(mg,x,p,t,type,use_bel)
@@ -1028,7 +990,7 @@ INT x, p, t, type, use_bel;
    if (a > 1.e-20){
    while (m){
       mult_and_add(tGrid,a,p,UU,x,t,type);
-      take_positive_part(tGrid,x);
+      take_positive_part(tGrid,x,W,t,type);
       copy_ed_to_tau(tGrid,x);
       iterate_SDFEM(mg,t0,t01,t02,ft0);
       v1 = residual_based_error_estimator(tGrid,U,U,UU,TNU,bb0,bb1,react,ft0,0.,use_bel);
@@ -1057,7 +1019,7 @@ INT x, p, t, type, use_bel;
    }
    printf("error est = %e, a = %e\n\n",sqrt(v0),a0);
    mult_and_add(tGrid,a0,p,UU,UU,t,type);
-   take_positive_part(tGrid,UU);
+   take_positive_part(tGrid,UU,W,t,type);
    }
 }
 
@@ -1077,7 +1039,7 @@ DOUBLE (*fcn)(), (*grad_fcn)();
    if (a > 1.e-20){
    while (m){
       mult_and_add(tGrid,a,p,UU,x,t,type);
-      take_positive_part(tGrid,x);
+      take_positive_part(tGrid,x,W,t,type);
       v1 = fcn(mg,x,t,type);
       if (v1 < v0){
          v0 = v1;
@@ -1098,7 +1060,7 @@ DOUBLE (*fcn)(), (*grad_fcn)();
    }
    printf("error est = %e, a = %e\n\n",sqrt(v0),a0);
    mult_and_add(tGrid,a0,p,UU,UU,t,type);
-   take_positive_part(tGrid,UU);
+   take_positive_part(tGrid,UU,W,t,type);
    }
 }
 
@@ -1113,7 +1075,7 @@ DOUBLE a, v0, *new_v0, (*fcn)();
 
    while (m){
       mult_and_add(tGrid,a,p,UU,x,t,type);
-      take_positive_part(tGrid,x);
+      take_positive_part(tGrid,x,W,t,type);
       v1 = fcn(mg,x,t,type);
       if (a < amin || i == max_it){
          if (v1 < v0){
@@ -1225,7 +1187,7 @@ DOUBLE eps, (*fcn)(), (*grad_fcn)();
                          &a,c1,c2,x,p,y,z,t,type))
          a = simple_line_search(mg,tGrid,x,p,v0,&v0,a,t,type,fcn);
       mult_and_add(tGrid,a,p,UU,UU,t,type);
-      take_positive_part(tGrid,UU);
+      take_positive_part(tGrid,UU,W,t,type);
       dphi0_old = dphi0;
       i++;
    }
@@ -1263,7 +1225,7 @@ DOUBLE eps, (*fcn)(), (*grad_fcn)();
          a = simple_line_search(mg,tGrid,x,p,v0,&v0,a,t,type,fcn);
 //    }
       mult_and_add(tGrid,a,p,UU,UU,t,type);
-      take_positive_part(tGrid,UU);
+      take_positive_part(tGrid,UU,W,t,type);
       dphi0_old = dphi0;
       i++;
 
@@ -1356,18 +1318,18 @@ if (i==0) a = 1.e-6;
          dphi0_old = dphi0;
          copy(tGrid,UU,x,t,type);
          mult_and_add(tGrid,a,p,UU,UU,t,type);
-         take_positive_part(tGrid,UU);
+         take_positive_part(tGrid,UU,W,t,type);
 //if (10*((itot+i+1)/10) == itot+i+1)
 if (itot+i+1 == 80 || itot+i+1 == 100 || itot+i+1 == 120){
 //mult1(tGrid,20.,UU);
 //mult1s(tGrid,10.,UU,270);
-take_positive_part(tGrid,UU);
+take_positive_part(tGrid,UU,W,t,type);
 }
 //printf("UU:\n");
 //norm_of_param(tGrid,UU);
 if (itot+i+1 == -80){
 supg_based_sold_tau(tGrid,UU);
-take_positive_part(tGrid,UU);
+take_positive_part(tGrid,UU,W,t,type);
 solution_graph_for_gnuplot(tGrid,UU,1,"delta_sold_supg_based_graph.gnu",P0,VECTOR);
 COMPUTE_SC=YES;
 }
@@ -1482,7 +1444,7 @@ printf("|Hp| = %e\n",sqrt(dot(tGrid,p,p,t,type)));
       dphi0_old = dphi0;
       copy(tGrid,UU,x,t,type);
       mult_and_add(tGrid,a,p,UU,UU,t,type);
-      take_positive_part(tGrid,UU);
+      take_positive_part(tGrid,UU,W,t,type);
       if (i > 0 && a < 1.e-6)
          l = 0;
       else if ((previous_fcn[0] - phi0)/previous_fcn[0] <= 1.e-4)
@@ -1566,7 +1528,7 @@ printf("Restart\n");
          inv(tGrid,p,p,t,type);
          a = simple_line_search(mg,tGrid,x,p,v0,&v0,a,t,type,fcn);
          mult_and_add(tGrid,a,p,UU,UU,t,type);
-         take_positive_part(tGrid,UU);
+         take_positive_part(tGrid,UU,W,t,type);
          printf("One step of steepest descent method performed.\n");
       }
       else
@@ -1607,7 +1569,7 @@ DOUBLE eps, (*fcn)(), (*grad_fcn)();
       dphi0_old = dphi0;
       copy(tGrid,UU,x,t,type);
       mult_and_add(tGrid,a,p,UU,UU,t,type);
-      take_positive_part(tGrid,UU);
+      take_positive_part(tGrid,UU,W,t,type);
       subtr(tGrid,UU,x,ind_s+n,t,type);
       copy(tGrid,UU,x,t,type);
       copy(tGrid,v,z,t,type);
@@ -1658,7 +1620,7 @@ DOUBLE eps, (*fcn)(), (*grad_fcn)();
       if (e_line_search(mg,tGrid,line_it,zoom_it,phi0,dphi0,&phi0,&a,c1,c2,
                       x,p,y,z,t,type)){
          mult_and_add(tGrid,a,p,x,x,t,type);
-         take_positive_part(tGrid,x);
+         take_positive_part(tGrid,x,W,t,type);
          grad_fcn(mg,x,v,t,type);
          sum = dot(tGrid,v,v,t,type);
          q = dot(tGrid,v,w,t,type);
