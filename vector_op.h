@@ -861,6 +861,20 @@ FILE *fp;
          fprintf(fp,"%i %e\n",m+theNode->index,NDS(theNode,z));
 }
 
+void stake_positive_part(tGrid,x,y)
+GRID *tGrid;
+INT x, y;
+{
+   NODE *theNode;
+
+   for (theNode=FIRSTN(tGrid); theNode != NULL; theNode=SUCC(theNode)){
+      if (NDS(theNode,x) < 0.)
+         NDS(theNode,x) = 0.;
+      if (NDS(theNode,x) > NDS(theNode,y))
+         NDS(theNode,x) = NDS(theNode,y);
+   }
+}
+
 void sn_set_zero_on_2nd_periodic_boundary(tGrid,z)
 GRID *tGrid;
 INT z;
@@ -1000,6 +1014,10 @@ GRID *tGrid; FLOAT g[GMN]; INT x, j, k, t;
 void save_sn_vector(tGrid,z,m,fp,t)
 GRID *tGrid; INT z, m, t; FILE *fp;
 {  eprintf("Error: save_sn_vector not available.\n");  }
+
+void stake_positive_part(tGrid,x,y)
+GRID *tGrid; INT x, y;
+{  eprintf("Error: stake_positive_part not available.\n");  }
 
 void sn_set_zero_on_2nd_periodic_boundary(tGrid,z)
 GRID *tGrid; INT z;
@@ -1917,6 +1935,20 @@ FILE *fp;
       fprintf(fp,"%i %e\n",m+pel->eflag,ED(pel,z));
 }
 
+void take_positive_part_e(tGrid,x,y)
+GRID *tGrid;
+INT x, y;
+{
+   ELEMENT *pel;
+
+   for (pel = FIRSTELEMENT(tGrid); pel; pel = pel->succ){
+      if (ED(pel,x) < 0.)
+         ED(pel,x) = 0.;
+      if (ED(pel,x) > ED(pel,y))
+         ED(pel,x) = ED(pel,y);
+   }
+}
+
 #else  /*  if !(E_DATA & SCALAR_ELEMENT_DATA)  */
 
 void set_value_e(tGrid,r,ze)  /* ze := r */
@@ -2034,6 +2066,10 @@ GRID *tGrid; FLOAT g[GMN]; INT xe, j, k;
 void save_e_vector(tGrid,z,m,fp)
 GRID *tGrid; INT z, m; FILE *fp;
 {  eprintf("Error: save_e_vector not available.\n");  }
+
+void take_positive_part_e(tGrid,x,y)
+GRID *tGrid; INT x, y;
+{  eprintf("Error: take_positive_part_e not available.\n");  }
 
 #endif  /*  if !(E_DATA & SCALAR_ELEMENT_DATA)  */
 
@@ -4084,7 +4120,6 @@ INT xe, n, ze;
          }
 }
 
-
 DOUBLE vdot_e(tGrid,xe,ye)  /* := xe*ye */
 GRID *tGrid;
 INT xe,ye;
@@ -4171,6 +4206,24 @@ FILE *fp;
          fprintf(fp,"%i %e\n",m+pelem->eflag,EDV(pelem,z,2));
 }
 
+void vtake_positive_part_e(tGrid,x,y)
+GRID *tGrid;
+INT x, y;
+{
+   ELEMENT *pel;
+
+   for (pel = FIRSTELEMENT(tGrid); pel; pel = pel->succ){
+      if (EDV(pel,x,0) < 0.)
+         EDV(pel,x,0) = 0.;
+      if (EDV(pel,x,1) < 0.)
+         EDV(pel,x,1) = 0.;
+      if (EDV(pel,x,0) > EDV(pel,y,0))
+         EDV(pel,x,0) = EDV(pel,y,0);
+      if (EDV(pel,x,1) > 1.)
+         EDV(pel,x,1) = 1.;
+   }
+}
+
 #else  /*  if !(E_DATA & VECTOR_ELEMENT_DATA)  */
 
 void vset_value_e(tGrid,r,ze)  /* ze := r */
@@ -4248,6 +4301,10 @@ GRID *tGrid; FLOAT g[GMN]; INT xe, j, k;
 void save_ve_vector(tGrid,z,m,ne,fp)
 GRID *tGrid; INT z, m, ne; FILE *fp;
 {  eprintf("Error: save_ve_vector not available.\n");  }
+
+void vtake_positive_part_e(tGrid,x)
+GRID *tGrid; INT x;
+{  eprintf("Error: vtake_positive_part_e not available.\n");  }
 
 #endif  /*  !(E_DATA & VECTOR_ELEMENT_DATA)  */
 
@@ -4703,6 +4760,28 @@ INT ze;
             E_SET_VALUE(pelem,r,ze)
 }
 
+DOUBLE sn_max_abs_value_e(tGrid,ze)  /* max := max(z_e) */
+GRID *tGrid;
+INT ze;
+{
+   GRID *theGrid;
+   ELEMENT *pelem;
+   DOUBLE max=0.;
+   
+   for (pelem = FIRSTELEMENT(tGrid); pelem!=NULL; pelem=pelem->succ)
+      max = MAX(max,fabs(EDSN(pelem,ze,0)));
+      max = MAX(max,fabs(EDSN(pelem,ze,1)));
+      max = MAX(max,fabs(EDSN(pelem,ze,2)));
+
+   for (theGrid = tGrid->coarser; theGrid; theGrid = theGrid->coarser)
+      for (pelem = FIRSTELEMENT(theGrid); pelem!=NULL; pelem=pelem->succ)
+         if (IS_LTOP_ELEMENT(pelem,tGrid))
+             max = MAX(max,fabs(EDSN(pelem,ze,0)));
+             max = MAX(max,fabs(EDSN(pelem,ze,1)));
+             max = MAX(max,fabs(EDSN(pelem,ze,2)));
+   return(max);
+}
+
 void sn_add_value_e(tGrid,r,ze)  /* ze_i := ze_i + r */
 GRID *tGrid;
 FLOAT r;
@@ -5121,11 +5200,37 @@ FILE *fp;
    }
 }
 
+void sn_take_positive_part_e(tGrid,x,y)
+GRID *tGrid;
+INT x, y;
+{
+   ELEMENT *pel;
+
+   for (pel = FIRSTELEMENT(tGrid); pel; pel = pel->succ){
+      if (EDSN(pel,x,0) < 0.)
+         EDSN(pel,x,0) = 0.;
+      if (EDSN(pel,x,1) < 0.)
+         EDSN(pel,x,1) = 0.;
+      if (EDSN(pel,x,2) < 0.)
+         EDSN(pel,x,2) = 0.;
+      if (EDSN(pel,x,0) > EDSN(pel,y,0))
+         EDSN(pel,x,0) = EDSN(pel,y,0);
+      if (EDSN(pel,x,1) > EDSN(pel,y,1))
+         EDSN(pel,x,1) = EDSN(pel,y,1);
+      if (EDSN(pel,x,2) > EDSN(pel,y,2))
+         EDSN(pel,x,2) = EDSN(pel,y,2);
+   }
+}
+
 #else  /*  if !(E_DATA & SCALAR_DATA_IN_ELEMENT_NODES)  */
 
 void sn_set_value_e(tGrid,r,ze)  /* ze := r */
 GRID *tGrid; FLOAT r; INT ze;
 {  eprintf("Error: sn_set_value_e not available.\n");  }
+
+DOUBLE sn_max_abs_value_e(tGrid,ze)  /* max := max(z_e) */
+GRID *tGrid; INT ze;
+{  eprintf("Error: sn_max_abs_value_e not available.\n"); return(0.);  }
 
 void sn_add_value_e(tGrid,r,ze)  /* ze := r */
 GRID *tGrid; FLOAT r; INT ze;
@@ -5230,6 +5335,10 @@ GRID *tGrid; FLOAT g[GMN]; INT xe, j, k;
 void save_sne_vector(tGrid,z,m,fp)
 GRID *tGrid; INT z, m; FILE *fp;
 {  eprintf("Error: save_sne_vector not available.\n");  }
+
+void sn_take_positive_part_e(tGrid,x,y)
+GRID *tGrid; INT x, y;
+{  eprintf("Error: sn_take_positive_part_e not available.\n");  }
 
 #endif  /*  !(E_DATA & SCALAR_DATA_IN_ELEMENT_NODES)  */
 
@@ -7296,6 +7405,8 @@ INT z, t, type;
         break;
    case Q_SE: return(max_abs_value_e(tGrid,z));
         break;
+   case Q_SNE: return(sn_max_abs_value_e(tGrid,z));
+        break;
    default:
         eprintf("Error: max_abs_value not available.\n");
         return(0.);
@@ -8601,6 +8712,26 @@ char name[];
         break;
    }
    fclose(fp);
+}
+
+void take_positive_part(tGrid,x,y,t,type)
+GRID *tGrid;
+INT x, y, t, type;
+{
+   //if(operation_available(t,&type,"take_positive_part"))
+   switch(type){
+   case Q_SN: stake_positive_part(tGrid,x,y);
+        break;
+   case Q_SE: take_positive_part_e(tGrid,x,y);
+        break;
+   case Q_SNE: sn_take_positive_part_e(tGrid,x,y);
+        break;
+   case Q_VE: vtake_positive_part_e(tGrid,x,y);
+        break;
+   default:
+        eprintf("Error: take_positive_part not available.\n");
+        break;
+   }
 }
 
 void set_zero_on_2nd_periodic_boundary(tGrid,z,type)
