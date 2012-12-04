@@ -394,6 +394,8 @@ DOUBLE x;
    return(der_fcn1(x*x/a)*2.*x/a);
 }
 
+#if E_DATA & VECTOR_ELEMENT_DATA
+
 void compute_res(tGrid,u,v,eps,bb0,bb1,react,rhs)
 GRID *tGrid;
 FLOAT eps, (*bb0)(), (*bb1)(), (*react)(), (*rhs)();
@@ -530,6 +532,10 @@ INT u, v;
          EDV(pelem,v,0) = 0.;
 }
 
+#else
+
+#endif
+
 double res_and_der_based_error_indicator(tGrid,u,eps,bb0,bb1,react,rhs)
 GRID *tGrid;
 FLOAT eps, (*bb0)(), (*bb1)(), (*react)(), (*rhs)();
@@ -553,57 +559,66 @@ FLOAT *x0, *x1, *x2;
          if (q > 1.e-30)
             SET22(bbo,bbo,q)
          sp1c_grad(pelem->n[0],pelem->n[1],pelem->n[2],bar,u,grad);
-      if (RES_NORM_IN_FCN == L1_NORM || RES_NORM_IN_FCN == L2_NORM ||
-          RES_NORM_IN_FCN == LP_NORM || RES_NORM_IN_FCN == RES_FCN){
-         res = 0.;
-         if (RES_NORM_IN_FCN == L1_NORM){
-         VERTICES_OF_ELEMENT(x0,x1,x2,pelem);
-         res = L1_norm_of_p1_fcn_on_triangle(x0,x1,x2,
-          bb0(x0)*grad[0]+bb1(x0)*grad[1]+react(x0)*NDS(pelem->n[0],u)-rhs(x0),
-          bb0(x1)*grad[0]+bb1(x1)*grad[1]+react(x1)*NDS(pelem->n[1],u)-rhs(x1),
-          bb0(x2)*grad[0]+bb1(x2)*grad[1]+react(x2)*NDS(pelem->n[2],u)-rhs(x2));
-         }
-         else if (RES_NORM_IN_FCN == L2_NORM){
-//          res = L2norm2_of_cd_res(pelem,bar,u,P1C,eps,bb0,bb1,react,rhs);
-            res = DOT(bb,grad) + 
+         if (RES_NORM_IN_FCN == L1_NORM || RES_NORM_IN_FCN == L2_NORM ||
+             RES_NORM_IN_FCN == LP_NORM || RES_NORM_IN_FCN == RES_FCN){
+           if (RES_NORM_IN_FCN == L1_NORM){
+           VERTICES_OF_ELEMENT(x0,x1,x2,pelem);
+           res = L1_norm_of_p1_fcn_on_triangle(x0,x1,x2,
+             bb0(x0)*grad[0]+bb1(x0)*grad[1]+react(x0)*NDS(pelem->n[0],u)-rhs(x0),
+             bb0(x1)*grad[0]+bb1(x1)*grad[1]+react(x1)*NDS(pelem->n[1],u)-rhs(x1),
+             bb0(x2)*grad[0]+bb1(x2)*grad[1]+react(x2)*NDS(pelem->n[2],u)-rhs(x2));
+           }
+           else if (RES_NORM_IN_FCN == L2_NORM){
+//           res = L2norm2_of_cd_res(pelem,bar,u,P1C,eps,bb0,bb1,react,rhs);
+             res = DOT(bb,grad) + 
+                react(xc)*(NDS(pelem->n[0],u)+NDS(pelem->n[1],u)
+                                             +NDS(pelem->n[2],u))/3. - rhs(xc);
+             res = res*res*rdetB;
+           }
+           else if (RES_NORM_IN_FCN == LP_NORM){
+             res = DOT(bb,grad) + 
                react(xc)*(NDS(pelem->n[0],u)+NDS(pelem->n[1],u)
                                             +NDS(pelem->n[2],u))/3. - rhs(xc);
-            res = res*res*rdetB;
-         }
-         else if (RES_NORM_IN_FCN == LP_NORM){
-            res = DOT(bb,grad) + 
+             res = pow(fabs(res),P_IN_LP_NORM)*rdetB;
+           }
+           else if (RES_NORM_IN_FCN == RES_FCN){
+             res = DOT(bb,grad) + 
                react(xc)*(NDS(pelem->n[0],u)+NDS(pelem->n[1],u)
                                             +NDS(pelem->n[2],u))/3. - rhs(xc);
-            res = pow(fabs(res),P_IN_LP_NORM)*rdetB;
-         }
-         else if (RES_NORM_IN_FCN == RES_FCN){
-            res = DOT(bb,grad) + 
+             res = fcn_in_res(fabs(res))*rdetB;
+           }
+           res *= RES_NORM_WEIGHT;
+
+#if E_DATA & VECTOR_ELEMENT_DATA
+
+           if (pelem->eflag != 1){
+             EDV(pelem,ERR_VAR,0) = res;
+             EDV(pelem,ERR_VAR,1) = EDV(pelem,CROSS_FCN_W,1)*CROSS_DER_WEIGHT*
+               fcn_in_ind(fabs(DOT(bbo,grad))/MAX_CROSS_DER)*rdetB;
+           }
+           else{
+             EDV(pelem,ERR_VAR,0) = res;
+             EDV(pelem,ERR_VAR,1) = 0.;
+           }
+           err += EDV(pelem,ERR_VAR,0) + EDV(pelem,ERR_VAR,1);
+
+#else
+
+           err += res + fcn_in_ind(fabs(DOT(bbo,grad)))*rdetB;
+
+#endif
+
+        }
+        else if (RES_NORM_IN_FCN == RES_X_CROSS){
+          res = DOT(bb,grad) + 
                react(xc)*(NDS(pelem->n[0],u)+NDS(pelem->n[1],u)
                                             +NDS(pelem->n[2],u))/3. - rhs(xc);
-            res = fcn_in_res(fabs(res))*rdetB;
-         }
-         res *= RES_NORM_WEIGHT;
-         if (pelem->eflag != 1){
-            EDV(pelem,ERR_VAR,0) = res;
-            EDV(pelem,ERR_VAR,1) = EDV(pelem,CROSS_FCN_W,1)*CROSS_DER_WEIGHT*
-              fcn_in_ind(fabs(DOT(bbo,grad))/MAX_CROSS_DER)*rdetB;
-         }
-         else{
-            EDV(pelem,ERR_VAR,0) = res;
-            EDV(pelem,ERR_VAR,1) = 0.;
-         }
-         err += EDV(pelem,ERR_VAR,0) + EDV(pelem,ERR_VAR,1);
-      }
-      else if (RES_NORM_IN_FCN == RES_X_CROSS){
-         res = DOT(bb,grad) + 
-               react(xc)*(NDS(pelem->n[0],u)+NDS(pelem->n[1],u)
-                                            +NDS(pelem->n[2],u))/3. - rhs(xc);
-//       if (pelem->eflag == 2 || pelem->eflag == 3)
+//        if (pelem->eflag == 2 || pelem->eflag == 3)
 //          res = res*res*rdetB;
-//       else
-            err += fcn_in_res(fabs(res))
-                  *fcn_in_ind(fabs(DOT(bbo,grad))/MAX_CROSS_DER)*rdetB;
-      }
+//        else
+          err += fcn_in_res(fabs(res))
+                *fcn_in_ind(fabs(DOT(bbo,grad))/MAX_CROSS_DER)*rdetB;
+        }
       }
    return(err);
 }
@@ -669,8 +684,19 @@ INT u, d;  /*  u ... solution at nodes, d ... derivatives at nodes  */
          if (pelem->eflag != 1){
             q = DOT(bbo,grad)/MAX_CROSS_DER;
             if (fabs(q) > 1.e-30){
+
+#if E_DATA & VECTOR_ELEMENT_DATA
+
                q = EDV(pelem,CROSS_FCN_W,1)*CROSS_DER_WEIGHT*
                    SGN(q)*der_of_fcn_in_ind(fabs(q))/MAX_CROSS_DER;
+
+#else
+
+               q = CROSS_DER_WEIGHT*
+                   SGN(q)*der_of_fcn_in_ind(fabs(q))/MAX_CROSS_DER;
+
+#endif
+
                for (i = 0; i < NVERT; i++)
                   NDS(pelem->n[i],d) += q*DOT(bbo,bar[i])*rdetB;
             }
@@ -844,6 +870,8 @@ INT u, v, w;
    return(err);
 }
 
+#if E_DATA & VECTOR_ELEMENT_DATA
+
 void res_err_to_p1c_prolongation(tGrid,u,v,q)
 GRID *tGrid;
 INT u, v;  /*  u ... p0; v ... p1c  */
@@ -859,6 +887,14 @@ INT u, v;  /*  u ... p0; v ... p1c  */
       NDS(pel->n[2],v) = MAX(NDS(pel->n[2],v),EDV(pel,u,0));
    }
 }
+
+#else
+
+void res_err_to_p1c_prolongation(tGrid,u,v,q)
+GRID *tGrid; INT u, v;
+{  }
+
+#endif
 
 void derivatives_of_residual_based_error_estimator(tGrid,u,d,g,v,w,
                                                    eps,bb0,bb1,react,rhs,beta,use_bel)

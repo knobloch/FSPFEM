@@ -4,6 +4,8 @@
 /*                                                                            */
 /******************************************************************************/
 
+#if (E_DATA & VECTOR_ELEMENT_DATA)
+
 void supg_based_sold_tau(tGrid,x)
 GRID *tGrid;
 INT x;
@@ -92,6 +94,8 @@ INT x;
    }
    printf("norm0 = %17.11e, norm1 = %17.11e\n",sqrt(sum0), sqrt(sum1));
 }
+
+#endif
 
 void compute_scaling_par();
 
@@ -615,7 +619,7 @@ INT Z, Z1, u, der, g, v, w, tot_der, use_bel;
    set_value(tGrid,0.,g,STOP_IS_FIRST_INNER,U_TYPE);
 }
 
-#if (E_DATA & SCALAR_ELEMENT_DATA) && (PAR_TYPE == Q_SE)
+#if (E_DATA & SCALAR_ELEMENT_DATA)
 
 void total_derivative_of_residual_based_error_estimator(tGrid,Z,Z1,
                         u,der,d,g,v,w,tot_der,eps,bb0,bb1,react,rhs,beta,use_bel)
@@ -636,7 +640,7 @@ INT Z, Z1, u, der, d, g, v, w, tot_der, use_bel;
    for (pel = FIRSTELEMENT(tGrid); pel; pel = pel->succ){
       barycentric_coordinates(pel->n[0]->myvertex->x,pel->n[1]->myvertex->x,
                               pel->n[2]->myvertex->x,b);
-      ED(pel,tot_der) = -cd_res_times_sd(pel,b,u,g,eps,bb0,bb1,react,rhs);
+      cd_res_times_sd(pel,tot_der,b,u,g,eps,bb0,bb1,react,rhs);
    }
 }
 
@@ -698,60 +702,23 @@ GRID *tGrid; FLOAT eps, (*bb0)(), (*bb1)(), (*react)(), (*rhs)(), beta; INT Z, Z
 
 #endif
 
-/*
-DOUBLE e_fcn_for_minim(mg,x,t,type)  // the parameters are in ED(pel,x)
+DOUBLE e_fcn_for_minim(mg,x,t,type)
 MULTIGRID *mg;
 INT x, t, type;
 {
-   ELEMENT *pel;
-   DOUBLE cmin=1.e-5, a=1.e16, sum=0.;
-// DOUBLE cmin=1.e-4, a=0., sum=0.;
-
-   copy_ed_to_tau(TOP_GRID(mg),x);
+   TAU_VARIABLE = x;
    iterate_SDFEM(mg,t0,t01,t02,ft0);
-   for (pel = FIRSTELEMENT(TOP_GRID(mg)); pel; pel = pel->succ)
-      if (ED(pel,x) < cmin)
-         sum += a*(ED(pel,x) - cmin)*(ED(pel,x) - cmin);
-   return(sum + residual_based_error_estimator(TOP_GRID(mg),U,U,UU,TNU,bb0,bb1,
-                                               react,ft0,0.,USE_BEL));
+   return(residual_based_error_estimator(TOP_GRID(mg),U,U,UU,TNU,bb0,bb1,react,ft0,0.,USE_BEL));
 }
 
 void e_grad_fcn_for_minim(mg,x,y,t,type)
 MULTIGRID *mg;
 INT x, y, t, type;
 {
-   ELEMENT *pel;
-   DOUBLE cmin=1.e-5, a=1.e16, sum=0.;
-// DOUBLE cmin=1.e-4, a=0., sum=0.;
-
-   copy_ed_to_tau(TOP_GRID(mg),x);
+   TAU_VARIABLE = x;
    iterate_SDFEM(mg,t0,t01,t02,ft0);
-   total_derivative_of_residual_based_error_estimator(TOP_GRID(mg),
-                           A,1,U,D,R,Q,U,UU,y,TNU,bb0,bb1,react,ft0,0.,USE_BEL);
-   for (pel = FIRSTELEMENT(TOP_GRID(mg)); pel; pel = pel->succ)
-      if (ED(pel,x) < cmin)
-         ED(pel,y) += 2.*a*(ED(pel,x) - cmin);
-}
-*/
-
-DOUBLE e_fcn_for_minim(mg,x,t,type)  /* the parameters are in ED(pel,x) */
-MULTIGRID *mg;
-INT x, t, type;
-{
-   copy_ed_to_tau(TOP_GRID(mg),x);
-   iterate_SDFEM(mg,t0,t01,t02,ft0);
-   return(residual_based_error_estimator(TOP_GRID(mg),U,U,UU,TNU,bb0,bb1,
-                                                react,ft0,0.,USE_BEL));
-}
-
-void e_grad_fcn_for_minim(mg,x,y,t,type)
-MULTIGRID *mg;
-INT x, y, t, type;
-{
-   copy_ed_to_tau(TOP_GRID(mg),x);
-   iterate_SDFEM(mg,t0,t01,t02,ft0);
-   total_derivative_of_residual_based_error_estimator(TOP_GRID(mg),
-                           A,1,U,D,R,Q,U,UU,y,TNU,bb0,bb1,react,ft0,0.,USE_BEL);
+   total_derivative_of_residual_based_error_estimator(TOP_GRID(mg),A,1,
+                               U,P,G,J,K,L,y,TNU,bb0,bb1,react,ft0,0.,USE_BEL);
 }
 
 DOUBLE e_line_phi(mg,a,x,p,z,t,type)
@@ -1074,7 +1041,7 @@ DOUBLE a, v0, *new_v0, (*fcn)();
    INT i=0, k=0, l=0, m=1, max_it=1000;
 
    while (m){
-      mult_and_add(tGrid,a,p,UU,x,t,type);
+      mult_and_add(tGrid,a,p,N,x,t,type);
       take_positive_part(tGrid,x,W,t,type);
       v1 = fcn(mg,x,t,type);
       if (a < amin || i == max_it){
@@ -1113,6 +1080,8 @@ DOUBLE a, v0, *new_v0, (*fcn)();
    return(a0);
 }
 
+#if (E_DATA & VECTOR_ELEMENT_DATA)
+
 void vmult_e_2d_s(tGrid,p,q,r0,r1)
 GRID *tGrid;
 INT p, q;
@@ -1125,6 +1094,14 @@ DOUBLE r0, r1;
       EDV(pel,q,1) = r1*EDV(pel,p,1);
    }
 }
+
+#else
+
+void vmult_e_2d_s(tGrid,p,q,r0,r1)
+GRID *tGrid; INT p, q; DOUBLE r0, r1;
+{  eprintf("Error: vmult_e_2d_s not available.\n");  }
+
+#endif
 
 DOUBLE multiple_line_search(mg,tGrid,x,p,q,v0,new_v0,a,a0_old,a1_old,t,type,fcn)
 MULTIGRID *mg;
@@ -1272,16 +1249,21 @@ INT max_it, line_it, zoom_it, m, x, p, y, z, v, w, t, type;
 DOUBLE eps, (*fcn)(), (*grad_fcn)();
 {
    DOUBLE c1=1.e-4, c2=0.9, q, r, phi0=1.+eps, dphi0, dphi0_old, a, g, 
-          rho[1000], previous_fcn[10], fcn_var, a0=1.e-6, a1=1.e-6;
-   INT i, ii, j, k, l, ll=0, ind_y=ind_s+m, n, oldest, itot=0, use_mls=0;
+          rho[1000], previous_fcn[10], fcn_var, a0=1.e-6, a1=1.e-6,
+          total_time, seconds; // total_time and seconds are for time measuring
+   INT i, ii, j, k, l, ll=0, ind_y=ind_s+m, n, oldest, itot=0, use_mls=0,
+       clock_t, start_time, stop_time; // time measuring
+   FILE *fp;                           // time measuring
 
+   fp = fopen("graph_of_minim.txt", "wb"); // time measuring
+   start_time = clock(); // time measuring
    for (i = 0; i < 10; i++)
       previous_fcn[i] = 1.e100;
    while (itot < max_it && phi0 > eps){
       printf("\nRestart\n");
       i = n = oldest = 0;
       l = 1;
-      copy(tGrid,UU,x,t,type);
+      copy(tGrid,N,x,t,type);
       phi0 = fcn(mg,x,t,type);
       grad_fcn(mg,x,v,t,type);
       g = 1.;
@@ -1316,10 +1298,10 @@ if (i==0) a = 1.e-6;
 //       if (!(itot == 0 && i < steep_it) && i > 0 && a < 1.e-12)
 //          a = 0.;
          dphi0_old = dphi0;
-         copy(tGrid,UU,x,t,type);
-         mult_and_add(tGrid,a,p,UU,UU,t,type);
-         take_positive_part(tGrid,UU,W,t,type);
-//if (10*((itot+i+1)/10) == itot+i+1)
+         copy(tGrid,N,x,t,type);
+         mult_and_add(tGrid,a,p,N,N,t,type);
+         take_positive_part(tGrid,N,W,t,type);
+         //if (10*((itot+i+1)/10) == itot+i+1)
 if (itot+i+1 == 80 || itot+i+1 == 100 || itot+i+1 == 120){
 //mult1(tGrid,20.,UU);
 //mult1s(tGrid,10.,UU,270);
@@ -1328,12 +1310,12 @@ take_positive_part(tGrid,UU,W,t,type);
 //printf("UU:\n");
 //norm_of_param(tGrid,UU);
 if (itot+i+1 == -80){
-supg_based_sold_tau(tGrid,UU);
+//supg_based_sold_tau(tGrid,UU);
 take_positive_part(tGrid,UU,W,t,type);
-solution_graph_for_gnuplot(tGrid,UU,1,"delta_sold_supg_based_graph.gnu",P0,VECTOR);
-COMPUTE_SC=YES;
+//solution_graph_for_gnuplot(tGrid,UU,1,"delta_sold_supg_based_graph.gnu",P0,VECTOR);
+//COMPUTE_SC=YES;
 }
-compute_scaling_par(TOP_GRID(mg),W);
+//compute_scaling_par(TOP_GRID(mg),W);
 phi0 = fcn(mg,UU,t,type);
 printf("phi0 = %e, a = %e\n",phi0,a);
          fcn_var = fabs(previous_fcn[0] - phi0)/previous_fcn[0];
@@ -1342,7 +1324,7 @@ printf("phi0 = %e, a = %e\n",phi0,a);
             if (SC_EXAMPLE == 55 || SC_EXAMPLE == 81)
                l = 0;
          }
-if (l){
+if (l){         
          if (!(itot == 0 && i < steep_it) && i > 0 && a < 1.e-6)
             l = 0;
          else if (fcn_var <= 1.e-4){
@@ -1355,11 +1337,17 @@ if (l){
          }
          else{
             ll = 0;
+            // k mereni casu - zacatek
+                 stop_time = clock();
+                 total_time = (stop_time - start_time);
+                 seconds = total_time/CLOCKS_PER_SEC;
+                 fprintf(fp,"%e  %e \n",seconds,phi0);
+            // k mereni casu - konec
             for (j = 0; j < 9; j++)
                previous_fcn[j] = previous_fcn[j+1];
             previous_fcn[9] = phi0;
             if (itot == 0 && i < steep_it){
-               copy(tGrid,UU,x,t,type);
+               copy(tGrid,N,x,t,type);
                grad_fcn(mg,x,v,t,type);
             }
             else{
@@ -1371,8 +1359,8 @@ if (l){
                   if (oldest == m)
                      oldest = 0;
                }
-               subtr(tGrid,UU,x,ind_s+ii,t,type);
-               copy(tGrid,UU,x,t,type);
+               subtr(tGrid,N,x,ind_s+ii,t,type);
+               copy(tGrid,N,x,t,type);
                copy(tGrid,v,z,t,type);
                grad_fcn(mg,x,v,t,type);
                subtr(tGrid,v,z,ind_y+ii,t,type);
@@ -1401,15 +1389,17 @@ if (l){
          if (itot == 0 && i == steep_it)
             l = 0;
       }
-      if (l)
+      if (l){
          i = max_it;
+         fclose(fp); // k mereni casu
+      }
       itot += i; 
    }
-   grad_fcn(mg,UU,v,t,type);
-      solution_graph_for_gnuplot(tGrid,v,0,"der_graph0.gnu",P0,VECTOR);
-      solution_graph_for_gnuplot(tGrid,v,1,"der_graph1.gnu",P0,VECTOR);
-      solution_graph_for_gnuplot(tGrid,ERR_VAR,0,"ind_graph0.gnu",P0,VECTOR);
-      solution_graph_for_gnuplot(tGrid,ERR_VAR,1,"ind_graph1.gnu",P0,VECTOR);
+//   grad_fcn(mg,UU,v,t,type);
+//      solution_graph_for_gnuplot(tGrid,v,0,"der_graph0.gnu",P0,VECTOR);
+//      solution_graph_for_gnuplot(tGrid,v,1,"der_graph1.gnu",P0,VECTOR);
+//      solution_graph_for_gnuplot(tGrid,ERR_VAR,0,"ind_graph0.gnu",P0,VECTOR);
+//      solution_graph_for_gnuplot(tGrid,ERR_VAR,1,"ind_graph1.gnu",P0,VECTOR);
 }
 
 INT LBFGSi_old(mg,tGrid,itot,max_it,line_it,zoom_it,eps,m,x,p,y,z,v,w,ind_s,
@@ -1690,13 +1680,13 @@ INT use_bel;
    DOUBLE eps, v0, v1, dx, xc[DIM], bo[DIM], p, r, tau;
    INT i;
 
-   mark_elements_for_error_ind(tGrid,bb0,bb1,Q);
-   set_tau(tGrid,TNU,bb0,bb1,UU);
-   mult(tGrid,10.,UU,W,0,PAR_TYPE);
-for (pel = FIRSTELEMENT(tGrid); pel; pel = pel->succ)
-EDV(pel,W,1) = EDV(pel,CROSS_FCN_W,1) = 1.;
+//   mark_elements_for_error_ind(tGrid,bb0,bb1,Q);
+   set_tau(tGrid,TNU,bb0,bb1,N);
+   mult(tGrid,5.,N,W,0,Q_SNE);
+//for (pel = FIRSTELEMENT(tGrid); pel; pel = pel->succ)
+//EDV(pel,W,1) = EDV(pel,CROSS_FCN_W,1) = 1.;
 //read_stab_par(tGrid,"stab_par33_constr_a",UU);
-   copy_ed_to_tau(tGrid,UU);
+   TAU_VARIABLE = N;
    iterate_SDFEM(mg,t0,t01,t02,ft0);
    if (SCALED_IND == YES){
       MAX_CROSS_DER = max_crosswind_derivative(tGrid,U,bb0,bb1);
@@ -1728,10 +1718,10 @@ EDV(pel,W,1) = EDV(pel,CROSS_FCN_W,1) = 1.;
    steepest_descent(mg,tGrid,10,1000,100,1.e-38,R,B,Q,P,X,Y,
                     0,PAR_TYPE,e_fcn_for_minim,e_grad_fcn_for_minim);
 */
-   eps = 0.0001*residual_based_error_estimator(tGrid,U,U,UU,TNU,bb0,bb1,
-                                                          react,ft0,0.,use_bel);
-   LBFGS(mg,tGrid,5000,10,10,10,eps,100,U,F,D,Q,R,B,X,
-         0,PAR_TYPE,e_fcn_for_minim,e_grad_fcn_for_minim);
+//   eps = 0.0001*residual_based_error_estimator(tGrid,U,U,UU,TNU,bb0,bb1,
+//                                                          react,ft0,0.,use_bel);
+   LBFGS(mg,tGrid,500,10,10,10,1.e-38,100,16,17,18,19,20,21,22,
+         0,Q_SNE,e_fcn_for_minim,e_grad_fcn_for_minim);
 /*
    printf("*** fcn = %e\n",e_fcn_for_minim(mg,UU,0,PAR_TYPE));
    LBFGS(mg,tGrid,500,0,10,10,1.e-38,100,U,F,D,Q,R,B,X,
@@ -1773,10 +1763,14 @@ EDV(pel,W,1) = EDV(pel,CROSS_FCN_W,1) = 1.;
                                                          react,ft0,0.,use_bel));
       }
 */
+   TAU_VARIABLE = N;
+   iterate_SDFEM(mg,t0,t01,t02,ft0);
+/*
    if (SC_EXAMPLE == 9 || SC_EXAMPLE == 91)
       save_profile(tGrid,0,0.,U,"profile_y.gnu",U_SPACE);
    solution_graph_for_gnuplot(tGrid,U,0,"sol_graph_opt.gnu",U_SPACE,U_STRUCTURE);
    sn_grid_data(tGrid,0.,1.,0.,1.,NVX-1,NVY-1,U,"sol_graph_opt.grid_gnu");
+*/
 /*
    compute_res(tGrid,U,D,TNU,bb0,bb1,react,ft0);
    solution_graph_for_gnuplot(tGrid,D,0,"res_graph.gnu",P0,VECTOR);
@@ -1850,4 +1844,17 @@ EDV(pel,W,1) = EDV(pel,CROSS_FCN_W,1) = 1.;
       NDS(pn,U) -= dx;
    }
 */
+
+
+   /*  visualization of solution  */
+   solution_graph_for_gnuplot(tGrid,U,0,"sol_graph_opt.gnu",U_SPACE,U_STRUCTURE);
+   save_profile(tGrid,0,0. ,U,"profile_y.gnu",U_SPACE);  // save profile
+   save_profile(tGrid,1,0. ,U,"profile_x.gnu",U_SPACE);  // save profile
+   sn_grid_data(tGrid,0.,1.,0.,1.,NVX-1,NVY-1,U,"sol_graph_opt.grid_gnu");
+
+   /*  visualization of tau  */
+   //solution_graph_for_gnuplot(tGrid,N,0,"sol_graph_opt_P1C.gnu",U_SPACE,U_STRUCTURE);
+   //sn_grid_data(tGrid,0.,1.,0.,1.,600,600,N,"sol_graph_opt_P1C.grid_gnu");
+   //sn_grid_data2(mg,0.,1.,0.,1.,600,600,N,"sol_graph_opt_P0.grid_gnu");
+   sn_grid_data3(mg,0.,1.,0.,1.,600,600,N,"sol_graph_opt_P1_NC.grid_gnu");
 }

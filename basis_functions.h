@@ -4288,10 +4288,12 @@ ELEMENT *pel; FLOAT b[DIM2][DIM2], eps, (*bb0)(), (*bb1)(), (*react)(), (*rhs)()
 
 #endif
 
-double cd_res_times_sd(pel,b,u,v,eps,bb0,bb1,react,rhs)
+#if TAU_SPACE == P0
+
+void cd_res_times_sd(pel,tot_der,b,u,v,eps,bb0,bb1,react,rhs)
 ELEMENT *pel;
 FLOAT b[DIM2][DIM2], eps, (*bb0)(), (*bb1)(), (*react)(), (*rhs)();
-INT u, v;
+INT tot_der, u, v;
 {
    FLOAT *x1, *x2, *x3, x112[DIM], x113[DIM], x221[DIM], x223[DIM], x331[DIM], 
          x332[DIM], x123[DIM], grad[DIM],
@@ -4321,9 +4323,106 @@ INT u, v;
    q331 = bb0(x331)*grad[0] + bb1(x331)*grad[1];
    q332 = bb0(x332)*grad[0] + bb1(x332)*grad[1];
    q123 = bb0(x123)*grad[0] + bb1(x123)*grad[1];
-   return(pq3(p1,p2,p3,p112,p113,p221,p223,p331,p332,p123,
-              q1,q2,q3,q112,q113,q221,q223,q331,q332,q123)*VOLUME(pel));
+   ED(pel,tot_der) = -pq3(p1,p2,p3,p112,p113,p221,p223,p331,p332,p123,
+              q1,q2,q3,q112,q113,q221,q223,q331,q332,q123)*VOLUME(pel);
 }
+
+#elif TAU_SPACE == P1C
+
+void cd_res_times_sd(pel,tot_der,b,u,v,eps,bb0,bb1,react,rhs)
+ELEMENT *pel;
+FLOAT b[DIM2][DIM2], eps, (*bb0)(), (*bb1)(), (*react)(), (*rhs)();
+INT tot_der, u, v;
+{
+   NODE *n0, *n1, *n2;
+   FLOAT *x1, *x2, *x3, x112[DIM], x113[DIM], x221[DIM], x223[DIM], x331[DIM], 
+         x332[DIM], x123[DIM], grad[DIM],
+         p1, p2, p3, p112, p113, p221, p223, p331, p332, p123,
+         q1, q2, q3, q112, q113, q221, q223, q331, q332, q123;
+
+   NODES_OF_ELEMENT(n0,n1,n2,pel);
+   VERTICES_OF_ELEMENT(x1,x2,x3,pel);
+   points(x1, x2, x3, x112, x113, x221, x223, x331, x332, x123);
+   p1   = scalar_conv_diff_res(pel,x1,  b,u,P1C,eps,bb0,bb1,react,rhs);
+   p2   = scalar_conv_diff_res(pel,x2,  b,u,P1C,eps,bb0,bb1,react,rhs);
+   p3   = scalar_conv_diff_res(pel,x3,  b,u,P1C,eps,bb0,bb1,react,rhs);
+   p112 = scalar_conv_diff_res(pel,x112,b,u,P1C,eps,bb0,bb1,react,rhs);
+   p113 = scalar_conv_diff_res(pel,x113,b,u,P1C,eps,bb0,bb1,react,rhs);
+   p221 = scalar_conv_diff_res(pel,x221,b,u,P1C,eps,bb0,bb1,react,rhs);
+   p223 = scalar_conv_diff_res(pel,x223,b,u,P1C,eps,bb0,bb1,react,rhs);
+   p331 = scalar_conv_diff_res(pel,x331,b,u,P1C,eps,bb0,bb1,react,rhs);
+   p332 = scalar_conv_diff_res(pel,x332,b,u,P1C,eps,bb0,bb1,react,rhs);
+   p123 = scalar_conv_diff_res(pel,x123,b,u,P1C,eps,bb0,bb1,react,rhs);
+   sp1c_grad(pel->n[0],pel->n[1],pel->n[2],b,v,grad);
+   q1   = bb0(x1  )*grad[0] + bb1(x1  )*grad[1];
+   q2   = bb0(x2  )*grad[0] + bb1(x2  )*grad[1];
+   q3   = bb0(x3  )*grad[0] + bb1(x3  )*grad[1];
+   q112 = bb0(x112)*grad[0] + bb1(x112)*grad[1];
+   q113 = bb0(x113)*grad[0] + bb1(x113)*grad[1];
+   q221 = bb0(x221)*grad[0] + bb1(x221)*grad[1];
+   q223 = bb0(x223)*grad[0] + bb1(x223)*grad[1];
+   q331 = bb0(x331)*grad[0] + bb1(x331)*grad[1];
+   q332 = bb0(x332)*grad[0] + bb1(x332)*grad[1];
+   q123 = bb0(x123)*grad[0] + bb1(x123)*grad[1];
+   NDS(n0,tot_der)=-pq3(p1,0.,0.,2.*p112/3.,2.*p113/3.,p221/3.,0.,p331/3.,0.,p123/3.,
+              q1,q2,q3,q112,q113,q221,q223,q331,q332,q123)*VOLUME(pel);
+   NDS(n1,tot_der)=-pq3(0.,p2,0.,p112/3.,0.,2.*p221/3.,2.*p223/3.,0.,p332/3.,p123/3.,
+              q1,q2,q3,q112,q113,q221,q223,q331,q332,q123)*VOLUME(pel);
+   NDS(n2,tot_der)=-pq3(0.,0.,p3,0.,p113/3.,0.,p223/3.,2.*p331/3.,2.*p332/3.,p123/3.,
+              q1,q2,q3,q112,q113,q221,q223,q331,q332,q123)*VOLUME(pel);
+}
+
+#elif TAU_SPACE == P1_NC
+
+void cd_res_times_sd(pel,tot_der,b,u,v,eps,bb0,bb1,react,rhs)
+ELEMENT *pel;
+FLOAT b[DIM2][DIM2], eps, (*bb0)(), (*bb1)(), (*react)(), (*rhs)();
+INT tot_der, u, v;
+{
+   FLOAT *x1, *x2, *x3, x112[DIM], x113[DIM], x221[DIM], x223[DIM], x331[DIM], 
+         x332[DIM], x123[DIM], grad[DIM],
+         p1, p2, p3, p112, p113, p221, p223, p331, p332, p123,
+         q1, q2, q3, q112, q113, q221, q223, q331, q332, q123;
+
+   VERTICES_OF_ELEMENT(x1, x2, x3, pel);
+   points(x1, x2, x3, x112, x113, x221, x223, x331, x332, x123);
+   p1   = scalar_conv_diff_res(pel,x1,  b,u,P1C,eps,bb0,bb1,react,rhs);
+   p2   = scalar_conv_diff_res(pel,x2,  b,u,P1C,eps,bb0,bb1,react,rhs);
+   p3   = scalar_conv_diff_res(pel,x3,  b,u,P1C,eps,bb0,bb1,react,rhs);
+   p112 = scalar_conv_diff_res(pel,x112,b,u,P1C,eps,bb0,bb1,react,rhs);
+   p113 = scalar_conv_diff_res(pel,x113,b,u,P1C,eps,bb0,bb1,react,rhs);
+   p221 = scalar_conv_diff_res(pel,x221,b,u,P1C,eps,bb0,bb1,react,rhs);
+   p223 = scalar_conv_diff_res(pel,x223,b,u,P1C,eps,bb0,bb1,react,rhs);
+   p331 = scalar_conv_diff_res(pel,x331,b,u,P1C,eps,bb0,bb1,react,rhs);
+   p332 = scalar_conv_diff_res(pel,x332,b,u,P1C,eps,bb0,bb1,react,rhs);
+   p123 = scalar_conv_diff_res(pel,x123,b,u,P1C,eps,bb0,bb1,react,rhs);
+   sp1c_grad(pel->n[0],pel->n[1],pel->n[2],b,v,grad);
+   q1   = bb0(x1  )*grad[0] + bb1(x1  )*grad[1];
+   q2   = bb0(x2  )*grad[0] + bb1(x2  )*grad[1];
+   q3   = bb0(x3  )*grad[0] + bb1(x3  )*grad[1];
+   q112 = bb0(x112)*grad[0] + bb1(x112)*grad[1];
+   q113 = bb0(x113)*grad[0] + bb1(x113)*grad[1];
+   q221 = bb0(x221)*grad[0] + bb1(x221)*grad[1];
+   q223 = bb0(x223)*grad[0] + bb1(x223)*grad[1];
+   q331 = bb0(x331)*grad[0] + bb1(x331)*grad[1];
+   q332 = bb0(x332)*grad[0] + bb1(x332)*grad[1];
+   q123 = bb0(x123)*grad[0] + bb1(x123)*grad[1];
+   EDSN(pel,tot_der,0)=-pq3(p1,0.,0.,2.*p112/3.,2.*p113/3.,p221/3.,0.,p331/3.,0.,p123/3.,
+              q1,q2,q3,q112,q113,q221,q223,q331,q332,q123)*VOLUME(pel);
+   EDSN(pel,tot_der,1)=-pq3(0.,p2,0.,p112/3.,0.,2.*p221/3.,2.*p223/3.,0.,p332/3.,p123/3.,
+              q1,q2,q3,q112,q113,q221,q223,q331,q332,q123)*VOLUME(pel);
+   EDSN(pel,tot_der,2)=-pq3(0.,0.,p3,0.,p113/3.,0.,p223/3.,2.*p331/3.,2.*p332/3.,p123/3.,
+              q1,q2,q3,q112,q113,q221,q223,q331,q332,q123)*VOLUME(pel);
+}
+
+#else
+
+void cd_res_times_sd(pel,tot_der,b,u,v,eps,bb0,bb1,react,rhs)
+ELEMENT *pel; FLOAT b[DIM2][DIM2], eps, (*bb0)(), (*bb1)(), (*react)(), (*rhs)();
+INT tot_der, u, v;
+{  eprintf("Error: cd_res_times_sd not available.\n");  }
+
+#endif
 
 void L2norms_of_cd_res_and_grad_u(pelem,b,u,space,eps,bb0,bb1,react,rhs,res,grad)
 ELEMENT *pelem;

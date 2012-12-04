@@ -4712,13 +4712,19 @@ FLOAT bar[DIM2][DIM2], eps, bb0y, bb1y;
 #endif
 
 FLOAT sd_delta(pelem,eps,bb0,bb1)
-ELEMENT *pelem; 
+ELEMENT *pelem;
 FLOAT eps, (*bb0)(), (*bb1)();
 {
    FLOAT xc[DIM], b[DIM2][DIM2], b_norm, hT;
 
-   if (DELTA_TYPE == OUTFLOW_D)
-      RETURN_TAU_ON(pelem)
+   if (DELTA_TYPE == OUTFLOW_D){
+      #if (E_DATA & SCALAR_ELEMENT_DATA)
+      return(ED(pelem,TAU_VARIABLE));
+      #else
+      eprintf("Error: sd_delta not available.\n");
+      return(0.);
+      #endif
+   }
    else if (DELTA_TYPE == CLASSIC_D){
       coord_of_barycentre(pelem,xc);
       barycentric_coordinates(pelem->n[0]->myvertex->x,
@@ -4741,6 +4747,84 @@ FLOAT eps, (*bb0)(), (*bb1)();
       return(0.);
    }
 }
+
+FLOAT sd_p1c_delta(pelem,eps,bb0,bb1,tau_index,node)
+ELEMENT *pelem; 
+INT tau_index;
+NODE *node;
+FLOAT eps, (*bb0)(), (*bb1)();
+{
+   FLOAT xc[DIM], b[DIM2][DIM2], b_norm, hT;
+
+   if (DELTA_TYPE == OUTFLOW_D){
+      #if (N_DATA & SCALAR_NODE_DATA) && (TAU_SPACE == P1C)
+      return(NDS(node,tau_index));
+      #else
+      eprintf("Error: sd_p1c_delta not available.\n");
+      return(0.);
+      #endif
+   }
+   else if (DELTA_TYPE == CLASSIC_D){
+      coord_of_barycentre(pelem,xc);
+      barycentric_coordinates(pelem->n[0]->myvertex->x,
+                              pelem->n[1]->myvertex->x,
+                              pelem->n[2]->myvertex->x,b); 
+      return(sd_tau_classic(pelem,b,eps,bb0(xc),bb1(xc),U_SPACE));
+   }
+   else if (DELTA_TYPE == BASIC_D1 || DELTA_TYPE == BASIC_D2){
+      b_norm = vnorm_on_element(pelem,bb0,bb1);
+      hT = diameter(pelem);
+      if (hT*b_norm < eps)
+         return(0.);
+      else if (DELTA_TYPE == BASIC_D1)
+         return(hT*DELTA_FACTOR);
+      else if (DELTA_TYPE == BASIC_D2)
+         return(hT*DELTA_FACTOR/b_norm);
+   }
+   else{
+      eprintf("Error: sd_p1c_delta not available.\n");
+      return(0.);
+   }
+}
+
+FLOAT sd_p1_nc_delta(pelem,eps,bb0,bb1,tau_index,node)
+ELEMENT *pelem; 
+INT tau_index, node;
+FLOAT eps, (*bb0)(), (*bb1)();
+{
+   FLOAT xc[DIM], b[DIM2][DIM2], b_norm, hT;
+
+   if (DELTA_TYPE == OUTFLOW_D){
+      #if (E_DATA & SCALAR_DATA_IN_ELEMENT_NODES) && (TAU_SPACE == P1_NC)
+      return(EDSN(pelem,tau_index,node));
+      #else
+      eprintf("Error: sd_p1_nc_delta not available.\n");
+      return(0.);
+      #endif
+   }
+   else if (DELTA_TYPE == CLASSIC_D){
+      coord_of_barycentre(pelem,xc);
+      barycentric_coordinates(pelem->n[0]->myvertex->x,
+                              pelem->n[1]->myvertex->x,
+                              pelem->n[2]->myvertex->x,b); 
+      return(sd_tau_classic(pelem,b,eps,bb0(xc),bb1(xc),U_SPACE));
+   }
+   else if (DELTA_TYPE == BASIC_D1 || DELTA_TYPE == BASIC_D2){
+      b_norm = vnorm_on_element(pelem,bb0,bb1);
+      hT = diameter(pelem);
+      if (hT*b_norm < eps)
+         return(0.);
+      else if (DELTA_TYPE == BASIC_D1)
+         return(hT*DELTA_FACTOR);
+      else if (DELTA_TYPE == BASIC_D2)
+         return(hT*DELTA_FACTOR/b_norm);
+   }
+   else{
+      eprintf("Error: sd_p1_nc_delta not available.\n");
+      return(0.);
+   }
+}
+
 
 #if (E_DATA & SCALAR_ELEMENT_DATA) && (PAR_TYPE == Q_SE)
 
@@ -4782,6 +4866,72 @@ INT v;
    }
 }
 
+#elif (E_DATA & SCALAR_ELEMENT_DATA) && (TAU_SPACE == P0)
+
+void set_tau(tGrid,eps,bb0,bb1,v)
+GRID *tGrid;
+FLOAT eps, (*bb0)(), (*bb1)();
+INT v;
+{
+   ELEMENT *pelem;
+   FLOAT xc[DIM], b[DIM2][DIM2], b_norm, hT;
+
+   for (pelem = FIRSTELEMENT(tGrid); pelem; pelem = pelem->succ){
+      coord_of_barycentre(pelem,xc);
+      barycentric_coordinates(pelem->n[0]->myvertex->x,
+                              pelem->n[1]->myvertex->x,
+                              pelem->n[2]->myvertex->x,b); 
+      ED(pelem,v) = sd_tau_classic(pelem,b,eps,bb0(xc),bb1(xc),U_SPACE);
+   }
+}
+
+#elif (E_DATA & SCALAR_DATA_IN_ELEMENT_NODES) && (TAU_SPACE == P1_NC)
+
+void set_tau(tGrid,eps,bb0,bb1,v)
+GRID *tGrid;
+FLOAT eps, (*bb0)(), (*bb1)();
+INT v;
+{
+   ELEMENT *pelem;
+   FLOAT xc[DIM], b[DIM2][DIM2], b_norm, hT;
+
+   for (pelem = FIRSTELEMENT(tGrid); pelem; pelem = pelem->succ){
+      coord_of_barycentre(pelem,xc);
+      barycentric_coordinates(pelem->n[0]->myvertex->x,
+                              pelem->n[1]->myvertex->x,
+                              pelem->n[2]->myvertex->x,b); 
+      EDSN(pelem,v,0) = sd_tau_classic(pelem,b,eps,bb0(xc),bb1(xc),U_SPACE);
+      EDSN(pelem,v,1) = sd_tau_classic(pelem,b,eps,bb0(xc),bb1(xc),U_SPACE);
+      EDSN(pelem,v,2) = sd_tau_classic(pelem,b,eps,bb0(xc),bb1(xc),U_SPACE);
+   }
+}
+
+#elif (N_DATA & SCALAR_NODE_DATA) && (TAU_SPACE == P1C)
+
+void set_tau(tGrid,eps,bb0,bb1,v)
+GRID *tGrid;
+FLOAT eps, (*bb0)(), (*bb1)();
+INT v;
+{
+   NODE *n0, *n1, *n2;
+   ELEMENT *pelem;
+   FLOAT xc[DIM], b[DIM2][DIM2], b_norm, hT;
+
+   for (n0 = FIRSTNODE(tGrid); n0; n0 = n0->succ){
+      NDS(n0,v) = 0.;
+   }
+   for (pelem = FIRSTELEMENT(tGrid); pelem; pelem = pelem->succ){
+      NODES_OF_ELEMENT(n0,n1,n2,pelem);
+      coord_of_barycentre(pelem,xc);
+      barycentric_coordinates(pelem->n[0]->myvertex->x,
+                              pelem->n[1]->myvertex->x,
+                              pelem->n[2]->myvertex->x,b); 
+      NDS(n0,v) = NDS(n0,v) + sd_tau_classic(pelem,b,eps,bb0(xc),bb1(xc),U_SPACE)/3.;
+      NDS(n1,v) = NDS(n1,v) + sd_tau_classic(pelem,b,eps,bb0(xc),bb1(xc),U_SPACE)/3.;
+      NDS(n2,v) = NDS(n2,v) + sd_tau_classic(pelem,b,eps,bb0(xc),bb1(xc),U_SPACE)/3.;
+   }
+}
+
 #else
 
 void set_tau(tGrid,eps,bb0,bb1,v)
@@ -4790,6 +4940,16 @@ GRID *tGrid; FLOAT eps, (*bb0)(), (*bb1)(); INT v;
 
 #endif
 
+
+
+
+
+
+
+// Na vymazani (vse az do pristi velke mezery),
+// zadne E_TAU ani E_TAU_SOLD by se nemeli pouzivat, misto toho
+// proste promenna v nejakem prostoru. Co kdybychom pak chteli vice ruznych stavu
+// si ulozit atp. ...
 #if (E_DATA & E_TAU) && (E_DATA & SCALAR_ELEMENT_DATA) && (PAR_TYPE == Q_SE)
 
 void copy_ed_to_tau(tGrid,v)
@@ -4837,6 +4997,16 @@ ELEMENT *pelem;
 {  eprintf("Error: sc_lin_par not available.\n"); return(0.);  }
 
 #endif
+
+
+
+
+
+
+
+
+
+
 
 void max_b_and_diam(pelem,bb0,bb1,b,hK)
 ELEMENT *pelem; 
@@ -5038,8 +5208,14 @@ INT u, space, sc_type;
 {
    FLOAT xc[DIM], b_norm, hT;
 
-   if (DELTA_TYPE == OUTFLOW_D)
-      RETURN_TAU_ON(pelem)
+   if (DELTA_TYPE == OUTFLOW_D){
+      #if (E_DATA & SCALAR_ELEMENT_DATA) && (TAU_SPACE == P0)
+      return(ED(pelem,TAU_VARIABLE));
+      #else
+      eprintf("Error: sd_delta not available.\n");
+      return(0.);
+      #endif
+   }
    else if (DELTA_TYPE == CLASSIC_D){
       if (PW_CONST_PAR == YES){
          coord_of_barycentre(pelem,xc);
@@ -7041,6 +7217,93 @@ FLOAT bb_0[DIM], bb_1[DIM], bb_2[DIM], b0[DIM2], b1[DIM2], b2[DIM2],
       putaij(n0->tstart,n1,n2,an1,an2,Z);
 }
 
+
+
+
+void sdp1nc_p1c_ij(n0,n1,n2,Z,bb_0,bb_1,bb_2,r0,r1,r2,b0,b1,b2,detB,delta_0,delta_1,delta_2)
+NODE *n0, *n1, *n2;                                 /* detB = volume */
+INT Z;
+FLOAT bb_0[DIM], bb_1[DIM], bb_2[DIM], b0[DIM2], b1[DIM2], b2[DIM2], 
+      r0, r1, r2, detB, delta_0, delta_1, delta_2;
+{
+   FLOAT t0[DIM2], t1[DIM2], t2[DIM2], ann, an1, an2;
+  
+      t0[0] = DOT(b0,bb_0);
+      t0[1] = DOT(b0,bb_1);
+      t0[2] = DOT(b0,bb_2);
+      t1[0] = DOT(b1,bb_0);
+      t1[1] = DOT(b1,bb_1);
+      t1[2] = DOT(b1,bb_2);
+      t2[0] = DOT(b2,bb_0);
+      t2[1] = DOT(b2,bb_1);
+      t2[2] = DOT(b2,bb_2);
+      ann = (6.*(3.*delta_0+delta_1+delta_2)   *t0[0]*t0[0] +
+             6.*(2.*delta_0+2.*delta_1+delta_2)*t0[0]*t0[1] +
+             6.*(2.*delta_0+delta_1+2.*delta_2)*t0[0]*t0[2] +
+             6.*(delta_0+3.*delta_1+delta_2)   *t0[1]*t0[1] +
+             6.*(delta_0+2.*delta_1+2.*delta_2)*t0[1]*t0[2] +
+             6.*(delta_0+delta_1+3.*delta_2)   *t0[2]*t0[2] +
+             3.*(4.*delta_0+delta_1+delta_2)*r0*t0[0] +
+             (3.*delta_0+2.*delta_1+delta_2)*r0*t0[1] +
+             (3.*delta_0+delta_1+2.*delta_2)*r0*t0[2] +
+             (3.*delta_0+2.*delta_1+delta_2)*r1*t0[0] +
+             (2.*delta_0+3.*delta_1+delta_2)*r1*t0[1] +
+             (   delta_0+   delta_1+delta_2)*r1*t0[2] +
+             (3.*delta_0+delta_1+2.*delta_2)*r2*t0[0] +
+             (   delta_0+   delta_1+delta_2)*r2*t0[1] +
+             (2.*delta_0+delta_1+3.*delta_2)*r2*t0[2])
+             *detB/180.;
+      an1 = (6.*(3.*delta_0+delta_1+delta_2)   *t1[0]*t0[0] +
+             3.*(2.*delta_0+2.*delta_1+delta_2)*t1[0]*t0[1] +
+             3.*(2.*delta_0+delta_1+2.*delta_2)*t1[0]*t0[2] +
+             3.*(2.*delta_0+2.*delta_1+delta_2)*t1[1]*t0[0] +
+             6.*(delta_0+3.*delta_1+delta_2)   *t1[1]*t0[1] +
+             3.*(delta_0+2.*delta_1+2.*delta_2)*t1[1]*t0[2] +
+             3.*(2.*delta_0+delta_1+2.*delta_2)*t1[2]*t0[0] +
+             3.*(delta_0+2.*delta_1+2.*delta_2)*t1[2]*t0[1] +
+             6.*(delta_0+delta_1+3.*delta_2)   *t1[2]*t0[2] +
+             (3.*delta_0+2.*delta_1+delta_2)*r0*t0[0] +
+             (2.*delta_0+3.*delta_1+delta_2)*r0*t0[1] +
+             (   delta_0+   delta_1+delta_2)*r0*t0[2] +
+             (2.*delta_0+3.*delta_1+delta_2)*r1*t0[0] +
+             3.*(delta_0+4.*delta_1+delta_2)*r1*t0[1] +
+             (delta_0+3.*delta_1+2.*delta_2)*r1*t0[2] +
+             (   delta_0+   delta_1+delta_2)*r2*t0[0] +
+             (delta_0+3.*delta_1+2.*delta_2)*r2*t0[1] +
+             (delta_0+2.*delta_1+3.*delta_2)*r2*t0[2])
+             *detB/180.;
+      an2 = (6.*(3.*delta_0+delta_1+delta_2)   *t2[0]*t0[0] +
+             3.*(2.*delta_0+2.*delta_1+delta_2)*t2[0]*t0[1] +
+             3.*(2.*delta_0+delta_1+2.*delta_2)*t2[0]*t0[2] +
+             3.*(2.*delta_0+2.*delta_1+delta_2)*t2[1]*t0[0] +
+             6.*(delta_0+3.*delta_1+delta_2)   *t2[1]*t0[1] +
+             3.*(delta_0+2.*delta_1+2.*delta_2)*t2[1]*t0[2] +
+             3.*(2.*delta_0+delta_1+2.*delta_2)*t2[2]*t0[0] +
+             3.*(delta_0+2.*delta_1+2.*delta_2)*t2[2]*t0[1] +
+             6.*(delta_0+delta_1+3.*delta_2)   *t2[2]*t0[2] +
+             (3.*delta_0+delta_1+2.*delta_2)*r0*t0[0] +
+             (   delta_0+   delta_1+delta_2)*r0*t0[1] +
+             (2.*delta_0+delta_1+3.*delta_2)*r0*t0[2] +
+             (   delta_0+   delta_1+delta_2)*r1*t0[0] +
+             (delta_0+3.*delta_1+2.*delta_2)*r1*t0[1] +
+             (delta_0+2.*delta_1+3.*delta_2)*r1*t0[2] +
+             (2.*delta_0+delta_1+3.*delta_2)*r2*t0[0] +
+             (delta_0+2.*delta_1+3.*delta_2)*r2*t0[1] +
+             3.*(delta_0+delta_1+4.*delta_2)*r2*t0[2])
+             *detB/180.;
+      COEFFN(n0,Z) += ann;
+      putaij(n0->tstart,n1,n2,an1,an2,Z);
+}
+
+
+
+
+
+
+
+
+
+
 void sd_p1c_quadr_ij(pelem,i0,i1,i2,Z,bar,bb0,bb1,react,rhs,eps,
                      u,space,sc_type,par1,par2,sd_tau,n,x,w)
 ELEMENT *pelem;
@@ -7852,6 +8115,72 @@ FLOAT nu, (*bb0)(), (*bb1)(), (*react)();
    }
 // printf("SDFEM on %i elements.\n",n);
 }
+
+void add_p1c_sd_p1_nc_term_matr(tGrid,Z,nu,bb0,bb1,react)
+GRID *tGrid;             /*  streamline-diffusion term; exact for pw. lin. b, */
+INT Z;                   /*  and pw. linear reaction term                     */
+FLOAT nu, (*bb0)(), (*bb1)(), (*react)();
+{
+   NODE *n0, *n1, *n2;
+   ELEMENT *pelem;
+   FLOAT bb_0[DIM], bb_1[DIM], bb_2[DIM], r0, r1, r2, r, delta[DIM2], ndetB, 
+                                                                  b[DIM2][DIM2];
+   INT n=0;
+  
+   for (pelem = FIRSTELEMENT(tGrid);pelem != NULL;pelem = pelem->succ){
+      delta[0] = sd_p1_nc_delta(pelem,nu,bb0,bb1,TAU_VARIABLE,0);
+      delta[1] = sd_p1_nc_delta(pelem,nu,bb0,bb1,TAU_VARIABLE,1);
+      delta[2] = sd_p1_nc_delta(pelem,nu,bb0,bb1,TAU_VARIABLE,2);
+      if ((delta[0] > 0.)||(delta[1] > 0.)||(delta[2] > 0.)){
+         n++;
+         NODES_OF_ELEMENT(n0,n1,n2,pelem);
+         V_NODE_VALUES(n0,n1,n2,bb0,bb1,bb_0,bb_1,bb_2)
+         S_NODE_VALUES(n0,n1,n2,react,r0,r1,r2)
+         ndetB = barycentric_coordinates(n0->myvertex->x,n1->myvertex->x,
+                                               n2->myvertex->x,b);
+         sdp1nc_p1c_ij(n0,n1,n2,Z,bb_0,bb_1,bb_2,r0,r1,r2,b[0],b[1],b[2],ndetB,delta[0],delta[1],delta[2]);
+         sdp1nc_p1c_ij(n1,n2,n0,Z,bb_1,bb_2,bb_0,r1,r2,r0,b[1],b[2],b[0],ndetB,delta[1],delta[2],delta[0]);
+         sdp1nc_p1c_ij(n2,n0,n1,Z,bb_2,bb_0,bb_1,r2,r0,r1,b[2],b[0],b[1],ndetB,delta[2],delta[0],delta[1]);
+      }
+   }
+// printf("SDFEM on %i elements.\n",n);
+}
+
+void add_p1c_sd_p1c_term_matr(tGrid,Z,nu,bb0,bb1,react)
+GRID *tGrid;             /*  streamline-diffusion term; exact for pw. lin. b, */
+INT Z;                   /*  and pw. linear reaction term                     */
+FLOAT nu, (*bb0)(), (*bb1)(), (*react)();
+{
+   NODE *n0, *n1, *n2;
+   ELEMENT *pelem;
+   FLOAT bb_0[DIM], bb_1[DIM], bb_2[DIM], r0, r1, r2, r, delta[DIM2], ndetB, 
+                                                                  b[DIM2][DIM2];
+   INT n=0;
+  
+   for (pelem = FIRSTELEMENT(tGrid);pelem != NULL;pelem = pelem->succ){
+      NODES_OF_ELEMENT(n0,n1,n2,pelem);
+      delta[0] = sd_p1c_delta(pelem,nu,bb0,bb1,TAU_VARIABLE,n0);
+      delta[1] = sd_p1c_delta(pelem,nu,bb0,bb1,TAU_VARIABLE,n1);
+      delta[2] = sd_p1c_delta(pelem,nu,bb0,bb1,TAU_VARIABLE,n2);
+      if ((delta[0] > 0.)||(delta[1] > 0.)||(delta[2] > 0.)){
+         n++;
+         
+         V_NODE_VALUES(n0,n1,n2,bb0,bb1,bb_0,bb_1,bb_2)
+         S_NODE_VALUES(n0,n1,n2,react,r0,r1,r2)
+         ndetB = barycentric_coordinates(n0->myvertex->x,n1->myvertex->x,
+                                               n2->myvertex->x,b);
+         sdp1nc_p1c_ij(n0,n1,n2,Z,bb_0,bb_1,bb_2,r0,r1,r2,b[0],b[1],b[2],ndetB,delta[0],delta[1],delta[2]);
+         sdp1nc_p1c_ij(n1,n2,n0,Z,bb_1,bb_2,bb_0,r1,r2,r0,b[1],b[2],b[0],ndetB,delta[1],delta[2],delta[0]);
+         sdp1nc_p1c_ij(n2,n0,n1,Z,bb_2,bb_0,bb_1,r2,r0,r1,b[2],b[0],b[1],ndetB,delta[2],delta[0],delta[1]);
+      }
+   }
+// printf("SDFEM on %i elements.\n",n);
+}
+
+
+
+
+
 
 void p1c_Newton_matr_for_sc(tGrid,eps,Z,u,bb0,bb1,react,rhs,space,sc_type,par1)
 GRID *tGrid;
@@ -12748,7 +13077,17 @@ INT Z, space, mstruct, vstruct;
                                              SD_Q_RULE,sd_p1c_quadr_ij);
                     }
                     else
-                       add_p1c_sd_term_matr(tGrid,Z,nu,bb0,bb1,react);
+                       if (TAU_SPACE == P0){
+                          add_p1c_sd_term_matr(tGrid,Z,nu,bb0,bb1,react);
+                       }
+                       else if (TAU_SPACE == P1_NC){
+                          add_p1c_sd_p1_nc_term_matr(tGrid,Z,nu,bb0,bb1,react);
+                       }
+                       else if (TAU_SPACE == P1C){
+                          add_p1c_sd_p1c_term_matr(tGrid,Z,nu,bb0,bb1,react);
+                       }
+                       else
+                          eprintf("Error: add_sd_term_matr not available.\n");
                  }
                  else
                     eprintf("Error: add_sd_term_matr not available.\n");
@@ -15397,6 +15736,140 @@ FLOAT nu, (*rhs)(), (*bb0)(), (*bb1)();
    }
 }
 
+void scalar_p1c_sdp1c_to_rhs_cubic(tGrid,f,nu,rhs,bb0,bb1)
+GRID *tGrid;
+INT f;
+FLOAT nu, (*rhs)(), (*bb0)(), (*bb1)();
+{
+   NODE *n0, *n1, *n2;
+   ELEMENT *pelem;
+   FLOAT bb_0[DIM], bb_1[DIM], bb_2[DIM], t0[DIM2], t1[DIM2], t2[DIM2], 
+         *x0, *x1, *x2, x001[DIM], x002[DIM], x110[DIM], x112[DIM], x220[DIM], 
+         x221[DIM], x012[DIM], 
+         f0, f1, f2, f001, f002, f110, f112, f220, f221, f012, 
+         s, z, delta[DIM2], ndetB, b[DIM2][DIM2];
+  
+   for (pelem = FIRSTELEMENT(tGrid);pelem != NULL;pelem = pelem->succ){
+      NODES_OF_ELEMENT(n0,n1,n2,pelem);
+      delta[0] = sd_p1c_delta(pelem,nu,bb0,bb1,TAU_VARIABLE,n0);
+      delta[1] = sd_p1c_delta(pelem,nu,bb0,bb1,TAU_VARIABLE,n1);
+      delta[2] = sd_p1c_delta(pelem,nu,bb0,bb1,TAU_VARIABLE,n2);
+      if ((delta[0] > 0.)||(delta[1] > 0.)||(delta[2] > 0.)){
+         VERTICES_OF_ELEMENT(x0,x1,x2,pelem);
+         V_NODE_VALUES(n0,n1,n2,bb0,bb1,bb_0,bb_1,bb_2)
+         points(x0,x1,x2,x001,x002,x110,x112,x220,x221,x012);
+         POINT_VALUES_10(x0,x1,x2,x001,x002,x110,x112,x220,x221,x012,
+                         f0,f1,f2,f001,f002,f110,f112,f220,f221,f012,rhs)
+         ndetB = barycentric_coordinates(x0,x1,x2,b);
+         t0[0] = DOT(b[0],bb_0);
+         t0[1] = DOT(b[0],bb_1);
+         t0[2] = DOT(b[0],bb_2);
+         t1[0] = DOT(b[1],bb_0);
+         t1[1] = DOT(b[1],bb_1);
+         t1[2] = DOT(b[1],bb_2);
+         t2[0] = DOT(b[2],bb_0);
+         t2[1] = DOT(b[2],bb_1);
+         t2[2] = DOT(b[2],bb_2);
+         s = delta[0]*f0 + delta[1]*f1 + delta[2]*f2; 
+         z = (delta[0]+delta[1]+delta[2])/3.*(f012+f012);
+         NDS(n0,f) += CONV_RHS_INT_L0_P1(t0[0],t0[1],t0[2],
+                                  f0*delta[0],f1*delta[1],f2*delta[2],
+                                  (2.*delta[0]+delta[1])/3.*f001,
+                                  (2.*delta[0]+delta[2])/3.*f002,
+                                  (2.*delta[1]+delta[0])/3.*f110,
+                                  (2.*delta[1]+delta[2])/3.*f112,
+                                  (2.*delta[2]+delta[0])/3.*f220,
+                                  (2.*delta[2]+delta[1])/3.*f221,
+                                  z/2.,s,z)*ndetB;
+         NDS(n1,f) += CONV_RHS_INT_L0_P1(t1[0],t1[1],t1[2],
+                                  f0*delta[0],f1*delta[1],f2*delta[2],
+                                  (2.*delta[0]+delta[1])/3.*f001,
+                                  (2.*delta[0]+delta[2])/3.*f002,
+                                  (2.*delta[1]+delta[0])/3.*f110,
+                                  (2.*delta[1]+delta[2])/3.*f112,
+                                  (2.*delta[2]+delta[0])/3.*f220,
+                                  (2.*delta[2]+delta[1])/3.*f221,
+                                  z/2.,s,z)*ndetB;
+          NDS(n2,f) += CONV_RHS_INT_L0_P1(t2[0],t2[1],t2[2],
+                                  f0*delta[0],f1*delta[1],f2*delta[2],
+                                  (2.*delta[0]+delta[1])/3.*f001,
+                                  (2.*delta[0]+delta[2])/3.*f002,
+                                  (2.*delta[1]+delta[0])/3.*f110,
+                                  (2.*delta[1]+delta[2])/3.*f112,
+                                  (2.*delta[2]+delta[0])/3.*f220,
+                                  (2.*delta[2]+delta[1])/3.*f221,
+                                  z/2.,s,z)*ndetB;
+      }
+   }
+}
+
+void scalar_p1c_sdp1nc_to_rhs_cubic(tGrid,f,nu,rhs,bb0,bb1)
+GRID *tGrid;
+INT f;
+FLOAT nu, (*rhs)(), (*bb0)(), (*bb1)();
+{
+   NODE *n0, *n1, *n2;
+   ELEMENT *pelem;
+   FLOAT bb_0[DIM], bb_1[DIM], bb_2[DIM], t0[DIM2], t1[DIM2], t2[DIM2], 
+         *x0, *x1, *x2, x001[DIM], x002[DIM], x110[DIM], x112[DIM], x220[DIM], 
+         x221[DIM], x012[DIM], 
+         f0, f1, f2, f001, f002, f110, f112, f220, f221, f012, 
+         s, z, delta[DIM2], ndetB, b[DIM2][DIM2];
+  
+   for (pelem = FIRSTELEMENT(tGrid);pelem != NULL;pelem = pelem->succ){
+      delta[0] = sd_p1_nc_delta(pelem,nu,bb0,bb1,TAU_VARIABLE,0);
+      delta[1] = sd_p1_nc_delta(pelem,nu,bb0,bb1,TAU_VARIABLE,1);
+      delta[2] = sd_p1_nc_delta(pelem,nu,bb0,bb1,TAU_VARIABLE,2);
+      if ((delta[0] > 0.)||(delta[1] > 0.)||(delta[2] > 0.)){
+         NODES_OF_ELEMENT(n0,n1,n2,pelem);
+         VERTICES_OF_ELEMENT(x0,x1,x2,pelem);
+         V_NODE_VALUES(n0,n1,n2,bb0,bb1,bb_0,bb_1,bb_2)
+         points(x0,x1,x2,x001,x002,x110,x112,x220,x221,x012);
+         POINT_VALUES_10(x0,x1,x2,x001,x002,x110,x112,x220,x221,x012,
+                         f0,f1,f2,f001,f002,f110,f112,f220,f221,f012,rhs)
+         ndetB = barycentric_coordinates(x0,x1,x2,b);
+         t0[0] = DOT(b[0],bb_0);
+         t0[1] = DOT(b[0],bb_1);
+         t0[2] = DOT(b[0],bb_2);
+         t1[0] = DOT(b[1],bb_0);
+         t1[1] = DOT(b[1],bb_1);
+         t1[2] = DOT(b[1],bb_2);
+         t2[0] = DOT(b[2],bb_0);
+         t2[1] = DOT(b[2],bb_1);
+         t2[2] = DOT(b[2],bb_2);
+         s = delta[0]*f0 + delta[1]*f1 + delta[2]*f2; 
+         z = (delta[0]+delta[1]+delta[2])/3.*(f012+f012);
+         NDS(n0,f) += CONV_RHS_INT_L0_P1(t0[0],t0[1],t0[2],
+                                  f0*delta[0],f1*delta[1],f2*delta[2],
+                                  (2.*delta[0]+delta[1])/3.*f001,
+                                  (2.*delta[0]+delta[2])/3.*f002,
+                                  (2.*delta[1]+delta[0])/3.*f110,
+                                  (2.*delta[1]+delta[2])/3.*f112,
+                                  (2.*delta[2]+delta[0])/3.*f220,
+                                  (2.*delta[2]+delta[1])/3.*f221,
+                                  z/2.,s,z)*ndetB;
+         NDS(n1,f) += CONV_RHS_INT_L0_P1(t1[0],t1[1],t1[2],
+                                  f0*delta[0],f1*delta[1],f2*delta[2],
+                                  (2.*delta[0]+delta[1])/3.*f001,
+                                  (2.*delta[0]+delta[2])/3.*f002,
+                                  (2.*delta[1]+delta[0])/3.*f110,
+                                  (2.*delta[1]+delta[2])/3.*f112,
+                                  (2.*delta[2]+delta[0])/3.*f220,
+                                  (2.*delta[2]+delta[1])/3.*f221,
+                                  z/2.,s,z)*ndetB;
+          NDS(n2,f) += CONV_RHS_INT_L0_P1(t2[0],t2[1],t2[2],
+                                  f0*delta[0],f1*delta[1],f2*delta[2],
+                                  (2.*delta[0]+delta[1])/3.*f001,
+                                  (2.*delta[0]+delta[2])/3.*f002,
+                                  (2.*delta[1]+delta[0])/3.*f110,
+                                  (2.*delta[1]+delta[2])/3.*f112,
+                                  (2.*delta[2]+delta[0])/3.*f220,
+                                  (2.*delta[2]+delta[1])/3.*f221,
+                                  z/2.,s,z)*ndetB;
+      }
+   }
+}
+
 void add_p1c_sd_rhs_term_quadr(tGrid,f,bb0,bb1,react,rhs,eps,
                                u,space,sc_type,par1,par2,sd_tau,qr)
 GRID *tGrid;
@@ -17186,8 +17659,19 @@ INT f, t, type, space, structure, degree;
                    add_sd_rhs_p1c_urbanek(tGrid, f, nu, rhs0, bb0, bb1);
                 else if (structure == SCALAR && degree == 2)
                    add_sd_rhs_p1c_urbanek(tGrid, f, nu, rhs0, bb0, bb1);
-                else if (structure == SCALAR && degree == 3)
-                   scalar_p1c_sd_to_rhs_cubic(tGrid,f,nu,rhs0,bb0,bb1);
+                else if (structure == SCALAR && degree == 3){
+                   if (TAU_SPACE == P0){
+                      scalar_p1c_sd_to_rhs_cubic(tGrid,f,nu,rhs0,bb0,bb1);
+                   }
+                   else if (TAU_SPACE == P1C){
+                      scalar_p1c_sdp1c_to_rhs_cubic(tGrid,f,nu,rhs0,bb0,bb1);
+                   }
+                   else if (TAU_SPACE == P1_NC){
+                      scalar_p1c_sdp1nc_to_rhs_cubic(tGrid,f,nu,rhs0,bb0,bb1);
+                   }
+                   else
+                      eprintf("Error: add_sd_rhs not available.\n");
+                }   
                 else
                    eprintf("Error: add_sd_rhs not available.\n");      
         break;

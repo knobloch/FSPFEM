@@ -310,6 +310,111 @@ GRID *theGrid; FLOAT xmin, xmax, ymin, ymax; INT nx, ny, u; char name[];
 
 #endif
 
+#if (E_DATA & SCALAR_ELEMENT_DATA) && (DIM == 2)
+
+void sn_grid_data2(mg,xmin,xmax,ymin,ymax,nx,ny,u,name)
+MULTIGRID *mg;
+FLOAT xmin, xmax, ymin, ymax;
+INT nx, ny, u;
+char name[];
+{
+   GRID *theGrid=TOP_GRID(mg);
+   ELEMENT *pel;
+   NODE *n0, *n1, *n2;
+   FLOAT *x0, *x1, *x2, l0, l1, l2, b[DIM2][DIM2], x[DIM], eps = -1.e-10;
+   FLOAT dx = (xmax-xmin)/nx, dy = (ymax-ymin)/ny;
+   INT i, j, k;
+   FILE *fp;
+   
+   fp = fopen(name,"w");
+   for (i = 0; i <= nx; i++){
+      x[0] = xmin + i*dx;
+      for (j = 0; j <= ny; j++){
+         x[1] = ymin + j*dy;
+         k = 1;
+         for (pel = FIRSTELEMENT(theGrid); k && pel; pel = pel->succ){
+            VERTICES_OF_ELEMENT(x0,x1,x2,pel);
+            barycentric_coordinates(x0,x1,x2,b); /* DOT(b[i],x)+b[i][2] is the
+                             barycentric coordinate of x with respect to x_i */
+            l0 = DOT(b[0],x)+b[0][2];
+            l1 = DOT(b[1],x)+b[1][2];
+            l2 = DOT(b[2],x)+b[2][2];
+            if(l0 >= eps && l1 >= eps && l2 >= eps){
+               fprintf(fp,"%e %e %e\n",x[0],x[1],ED(pel,u));
+               k = 0;
+            }
+         }
+      }
+      fprintf(fp,"\n");
+   }
+   fclose(fp);
+}
+
+#else
+
+void sn_grid_data2(mg,xmin,xmax,ymin,ymax,nx,ny,u,name)
+MULTIGRID *mg; FLOAT xmin, xmax, ymin, ymax; INT nx, ny, u; char name[];
+{  eprintf("Error: sn_grid_data2 not available.\n");  }
+
+#endif
+
+#if (E_DATA & SCALAR_DATA_IN_ELEMENT_NODES) && (DIM == 2)
+
+void sn_grid_data3(mg,xmin,xmax,ymin,ymax,nx,ny,u,name)
+MULTIGRID *mg;
+FLOAT xmin, xmax, ymin, ymax;
+INT nx, ny, u;
+char name[];
+{
+   GRID *theGrid=TOP_GRID(mg);
+   ELEMENT *pel;
+   NODE *n0, *n1, *n2;
+   FLOAT *x0, *x1, *x2, l0, l1, l2, b[DIM2][DIM2], x[DIM], eps = -1.e-10;
+   FLOAT dx = (xmax-xmin)/nx, dy = (ymax-ymin)/ny;
+   INT i, j, k;
+   FILE *fp;
+   
+   fp = fopen(name,"w");
+   for (i = 0; i <= nx; i++){
+      x[0] = xmin + i*dx;
+      for (j = 0; j <= ny; j++){
+         x[1] = ymin + j*dy;
+         k = 1;
+         for (pel = FIRSTELEMENT(theGrid); k && pel; pel = pel->succ){
+            VERTICES_OF_ELEMENT(x0,x1,x2,pel);
+            barycentric_coordinates(x0,x1,x2,b);
+            l0 = DOT(b[0],x)+b[0][2];
+            l1 = DOT(b[1],x)+b[1][2];
+            l2 = DOT(b[2],x)+b[2][2];
+            if(l0 >= eps && l1 >= eps && l2 >= eps){
+               NODES_OF_ELEMENT(n0,n1,n2,pel);
+               if (fabs(x0[0]-x[0]) < 1.e-14 && fabs(x0[1]-x[1]) < 1.e-14)
+                  fprintf(fp,"%e %e %e\n",x[0],x[1],EDSN(pel,u,0));
+               else if (fabs(x1[0]-x[0]) < 1.e-14 && fabs(x1[1]-x[1]) < 1.e-14)
+                  fprintf(fp,"%e %e %e\n",x[0],x[1],EDSN(pel,u,1));
+               else if (fabs(x2[0]-x[0]) < 1.e-14 && fabs(x2[1]-x[1]) < 1.e-14)
+                  fprintf(fp,"%e %e %e\n",x[0],x[1],EDSN(pel,u,2));
+               else
+                  fprintf(fp,"%e %e %e\n",x[0],x[1],l0*EDSN(pel,u,0)
+                                                   +l1*EDSN(pel,u,1)
+                                                   +l2*EDSN(pel,u,2));
+               k = 0;
+            }
+         }
+      }
+      fprintf(fp,"\n");
+   }
+   fclose(fp);
+}
+
+#else
+
+void sn_grid_data3(mg,xmin,xmax,ymin,ymax,nx,ny,u,name)
+MULTIGRID *mg; FLOAT xmin, xmax, ymin, ymax; INT nx, ny, u; char name[];
+{  eprintf("Error: sn_grid_data3 not available.\n");  }
+
+#endif
+
 #if (N_DATA & MVECTOR_NODE_DATA) && (F_DATA & MVECTOR_FACE_DATA) && (E_DATA & MVECTOR_ELEMENT_DATA) && (DIM == 2)
 
 void gsn_grid_data(theGrid,xmin,xmax,ymin,ymax,nx,ny,u,name)
@@ -1984,6 +2089,8 @@ DOUBLE x[DIM], v[DIM];
    }
    fclose(fp);
 }
+
+#elif (N_DATA & SCALAR_NODE_DATA) && (E_DATA & VECTOR_ELEMENT_DATA)
 
 INT find_oscillation_regions_p1c(tGrid,d,v,w)
 GRID *tGrid;
