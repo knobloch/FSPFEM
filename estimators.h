@@ -534,6 +534,26 @@ INT u, v;
 
 #else
 
+void compute_res(tGrid,u,v,eps,bb0,bb1,react,rhs)
+GRID *tGrid; FLOAT eps, (*bb0)(), (*bb1)(), (*react)(), (*rhs)(); INT u, v;
+{  eprintf("Error: compute_res not available.\n"); return(0.);  }
+
+void compute_norm_of_res(tGrid,v,norm,p_in_norm)
+GRID *tGrid; DOUBLE p_in_norm; INT v, norm;
+{  eprintf("Error: compute_norm_of_res not available.\n"); return(0.);  }
+
+void compute_mid_res(tGrid,v)
+GRID *tGrid; INT v;
+{  eprintf("Error: compute_mid_res not available.\n"); return(0.);  }
+
+double max_crosswind_derivative(tGrid,u,bb0,bb1)
+GRID *tGrid; FLOAT (*bb0)(), (*bb1)(); INT u;
+{  eprintf("Error: max_crosswind_derivative not available.\n"); return(0.);  }
+
+double compute_crosswind_derivative(tGrid,u,v,bb0,bb1)
+GRID *tGrid; FLOAT (*bb0)(), (*bb1)(); INT u, v;
+{  eprintf("Error: compute_crosswind_derivative not available.\n"); return(0.);  }
+
 #endif
 
 double res_and_der_based_error_indicator(tGrid,u,eps,bb0,bb1,react,rhs)
@@ -892,7 +912,7 @@ INT u, v;  /*  u ... p0; v ... p1c  */
 
 void res_err_to_p1c_prolongation(tGrid,u,v,q)
 GRID *tGrid; INT u, v;
-{  }
+{  eprintf("Error: res_err_to_p1c_prolongation not available.\n"); return(0.);  }
 
 #endif
 
