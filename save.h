@@ -310,6 +310,8 @@ GRID *theGrid; FLOAT xmin, xmax, ymin, ymax; INT nx, ny, u; char name[];
 
 #endif
 
+
+
 #if (E_DATA & SCALAR_ELEMENT_DATA) && (DIM == 2)
 
 void sn_grid_data2(mg,xmin,xmax,ymin,ymax,nx,ny,u,name)
@@ -414,6 +416,12 @@ MULTIGRID *mg; FLOAT xmin, xmax, ymin, ymax; INT nx, ny, u; char name[];
 {  eprintf("Error: sn_grid_data3 not available.\n");  }
 
 #endif
+
+
+
+
+
+
 
 #if (N_DATA & MVECTOR_NODE_DATA) && (F_DATA & MVECTOR_FACE_DATA) && (E_DATA & MVECTOR_ELEMENT_DATA) && (DIM == 2)
 
@@ -2090,7 +2098,35 @@ DOUBLE x[DIM], v[DIM];
    fclose(fp);
 }
 
-#elif (N_DATA & SCALAR_NODE_DATA) && (E_DATA & VECTOR_ELEMENT_DATA)
+#else
+
+void snode_solution_graph_for_gnuplot(fp,tGrid,u)
+GRID *tGrid; INT u; FILE *fp;
+{  eprintf("Error: snode_solution_graph_for_gnuplot not available.\n");  } 
+
+void snode_solution_graph_for_gnuplot0(fp,tGrid,u)
+GRID *tGrid; INT u; FILE *fp;
+{  eprintf("Error: snode_solution_graph_for_gnuplot0 not available.\n");  } 
+
+void snode_error_graph_for_gnuplot(fp,tGrid,u0,u,eps)
+GRID *tGrid; INT u; FLOAT eps, (*u0)(); FILE *fp;
+{  eprintf("Error: snode_error_graph_for_gnuplot not available.\n");  } 
+
+void q1_solution_graph_for_gnuplot(fp,tGrid,u)
+GRID *tGrid; INT u; FILE *fp;
+{  eprintf("Error: q1_solution_graph_for_gnuplot not available.\n");  } 
+
+void q1_error_graph_for_gnuplot(fp,tGrid,u0,u,eps)
+GRID *tGrid; INT u; FLOAT eps, (*u0)(); FILE *fp;
+{  eprintf("Error: q1_error_graph_for_gnuplot not available.\n");  } 
+
+void draw_cut_for_gnuplot_p1c(tGrid,u,name,x,v) /* cut along the line x+a*v */
+GRID *tGrid; INT u; char name[]; DOUBLE x[DIM], v[DIM];
+{  eprintf("Error: draw_cut_for_gnuplot_p1cn not available.\n");  }
+
+#endif
+
+#if (N_DATA & SCALAR_NODE_DATA) && (E_DATA & VECTOR_ELEMENT_DATA)
 
 INT find_oscillation_regions_p1c(tGrid,d,v,w)
 GRID *tGrid;
@@ -2138,30 +2174,6 @@ INT v, w; /* v ... scalar node variable, w ... vector element variable */
 }
 
 #else
-
-void snode_solution_graph_for_gnuplot(fp,tGrid,u)
-GRID *tGrid; INT u; FILE *fp;
-{  eprintf("Error: snode_solution_graph_for_gnuplot not available.\n");  } 
-
-void snode_solution_graph_for_gnuplot0(fp,tGrid,u)
-GRID *tGrid; INT u; FILE *fp;
-{  eprintf("Error: snode_solution_graph_for_gnuplot0 not available.\n");  } 
-
-void snode_error_graph_for_gnuplot(fp,tGrid,u0,u,eps)
-GRID *tGrid; INT u; FLOAT eps, (*u0)(); FILE *fp;
-{  eprintf("Error: snode_error_graph_for_gnuplot not available.\n");  } 
-
-void q1_solution_graph_for_gnuplot(fp,tGrid,u)
-GRID *tGrid; INT u; FILE *fp;
-{  eprintf("Error: q1_solution_graph_for_gnuplot not available.\n");  } 
-
-void q1_error_graph_for_gnuplot(fp,tGrid,u0,u,eps)
-GRID *tGrid; INT u; FLOAT eps, (*u0)(); FILE *fp;
-{  eprintf("Error: q1_error_graph_for_gnuplot not available.\n");  } 
-
-void draw_cut_for_gnuplot_p1c(tGrid,u,name,x,v) /* cut along the line x+a*v */
-GRID *tGrid; INT u; char name[]; DOUBLE x[DIM], v[DIM];
-{  eprintf("Error: draw_cut_for_gnuplot_p1cn not available.\n");  }
 
 void find_oscillation_regions_p1c(tGrid,d,v,w)
 GRID *tGrid; DOUBLE d; INT v, w;
@@ -3582,6 +3594,61 @@ GRID *tGrid; INT Z, *Ap, *Ai, nj; DOUBLE *Ax;
 
 #endif
 
+#if (N_DATA & ONE_NODE_MATR) && (N_DATA & ONE_NODE_FACE_MATR) && (F_DATA & ONE_FACE_MATR) && (F_DATA & ONE_FACE_NODE_MATR) && (DATA_S & N_LINK_TO_NODES) && (DATA_S & N_LINK_TO_FACES) && (DATA_S & F_LINK_TO_FACES) && (DATA_S & F_LINK_TO_NODES) 
+
+void fill_Ax_for_sn_sf(tGrid,Z,Ap,Ai,Ax)
+GRID *tGrid;
+INT Z, *Ap, *Ai;
+DOUBLE *Ax;
+{
+   NODE *pni;
+   FACE *pfi;
+   LINK *plij;
+   NFLINK *pnflij;
+   FNLINK *pfnlij;
+   FLINK *pflij;
+   INT i, j, k;
+
+   for (pni = FIRSTNODE(tGrid); pni; pni = pni->succ){
+      i = pni->index2;
+      for (k = Ap[i]; Ai[k] != i; k++);
+      Ax[k] = COEFFN(pni,Z);
+      for (plij = START(pni); plij; plij = plij->next){
+         j = NBNODE(plij)->index2;
+         for (k = Ap[j]; Ai[k] != i; k++);
+         Ax[k] = COEFFL(plij,Z);
+      }
+      for (pnflij = NFSTART(pni); pnflij; pnflij = pnflij->next){
+         j = NBFACE(pnflij)->index2;
+         for (k = Ap[j]; Ai[k] != i; k++);
+         Ax[k] = COEFFL(pnflij,Z);
+      }
+   }
+   for (pfi = FIRSTFACE(tGrid); pfi; pfi = pfi->succ){
+      i = pfi->index2;
+      for (k = Ap[i]; Ai[k] != i; k++);
+      Ax[k] = COEFF_FF(pfi,Z);
+      for (pflij = FSTART(pfi); pflij; pflij = pflij->next){
+         j = NBFACE(pflij)->index2;
+         for (k = Ap[j]; Ai[k] != i; k++);
+         Ax[k] = COEFF_FL(pflij,Z);
+      }
+      for (pfnlij = FNSTART(pfi); pfnlij; pfnlij = pfnlij->next){
+         j = NBNODE(pfnlij)->index2;
+         for (k = Ap[j]; Ai[k] != i; k++);
+         Ax[k] = COEFFL(pfnlij,Z);
+      }
+   }
+}
+
+#else
+
+void fill_Ax_for_sn_sf(tGrid,Z,Ap,Ai,Ax)
+GRID *tGrid; INT Z, *Ap, *Ai; DOUBLE *Ax;
+{  eprintf("Error: fill_Ax_for_sn_sf not available.\n");  }
+
+#endif
+
 #if (N_DATA & ONE_NODE_MATR) && (DATA_S & N_LINK_TO_NODES) && (E_DATA & ExN_MATR) && (E_DATA & NxE_MATR) && (E_DATA & ExE_MATR)
 
 void fill_Ax_for_sn_se_matr(tGrid,Z,Ap,Ai,Ax)
@@ -3664,6 +3731,50 @@ GRID *tGrid; INT u; DOUBLE *x;
 
 #endif
 
+#if (N_DATA & SCALAR_NODE_DATA) && (F_DATA & SCALAR_FACE_DATA)
+
+void make_vector_from_grid_data_sn_sf(tGrid,u,x)
+GRID *tGrid;
+INT u;
+DOUBLE *x;
+{
+   ELEMENT *pel;
+   NODE *pni;
+   FACE *pfi;
+
+   for (pni = FIRSTNODE(tGrid); pni; pni = pni->succ)
+      x[pni->index2] = NDS(pni,u);
+   for (pfi = FIRSTFACE(tGrid); pfi; pfi = pfi->succ)
+      x[pfi->index2] = FD(pfi,u);
+}
+
+void make_grid_data_from_vector_sn_sf(tGrid,u,x)
+GRID *tGrid;
+INT u;
+DOUBLE *x;
+{
+   ELEMENT *pel;
+   NODE *pni;
+   FACE *pfi;
+
+   for (pni = FIRSTNODE(tGrid); pni; pni = pni->succ)
+      NDS(pni,u) = x[pni->index2];
+   for (pfi = FIRSTFACE(tGrid); pfi; pfi = pfi->succ)
+      FD(pfi,u) = x[pfi->index2];
+}
+
+#else
+
+void make_vector_from_grid_data_sn_sf(tGrid,u,x)
+GRID *tGrid; INT u; DOUBLE *x;
+{  eprintf("Error: make_vector_from_grid_data_sn_sf not available.\n");  }
+
+void make_grid_data_from_vector_sn_sf(tGrid,u,x)
+GRID *tGrid; INT u; DOUBLE *x;
+{  eprintf("Error: make_grid_data_from_vector_sn_sf not available.\n");  }
+
+#endif
+
 #if (N_DATA & SCALAR_NODE_DATA) && (E_DATA & SCALAR_ELEMENT_DATA)
 
 void make_vector_from_sn_se(tGrid,u,x)
@@ -3707,7 +3818,7 @@ GRID *tGrid; INT u; DOUBLE *x;
 
 #endif
 
-#if (N_DATA & NxN_NODE_MATR) && (N_DATA & NxM_NODE_FACE_MATR) && (F_DATA & NxN_FACE_MATR) && (F_DATA & MxN_FACE_NODE_MATR) && (DATA_S & N_LINK_TO_NODES) && (DATA_S & N_LINK_TO_FACES) && (DATA_S & F_LINK_TO_FACES) && (DATA_S & F_LINK_TO_NODES) && (E_DATA & MxM_E_E_MATR) && (E_DATA & MxN_E_N_MATR) && (E_DATA & NxM_N_E_MATR) && (E_DATA & MxN_E_F_MATR) && (E_DATA & NxM_F_E_MATR) && (DIM == 2)
+#if (DATA_S & N_LINK_TO_NODES) && (DATA_S & N_LINK_TO_FACES) && (DATA_S & F_LINK_TO_FACES) && (DATA_S & F_LINK_TO_NODES) && (DIM == 2)
 
 void put_indices_into_Ai_list(ind,kk,j,n,Ap,Ai,max)
 INT ind, kk, j, *n, *Ap, *Ai, max;
@@ -3834,6 +3945,16 @@ INT *Ap, *Ai, *nj, maxj, max, kk, nn, mm;
          copy_columns(j,mm,Ap,Ai,max);
       }
 }
+
+#else
+
+void fill_Ap_and_Ai_general(tGrid,Ap,Ai,nj,maxj,max,kk,nn,mm)
+GRID *tGrid; INT *Ap, *Ai, *nj, maxj, max, kk, nn, mm;
+{ eprintf("Error: fill_Ap_and_Ai_general not available.\n"); }
+
+#endif
+
+#if (N_DATA & NxN_NODE_MATR) && (N_DATA & NxM_NODE_FACE_MATR) && (F_DATA & NxN_FACE_MATR) && (F_DATA & MxN_FACE_NODE_MATR) && (DATA_S & N_LINK_TO_NODES) && (DATA_S & N_LINK_TO_FACES) && (DATA_S & F_LINK_TO_FACES) && (DATA_S & F_LINK_TO_NODES) && (E_DATA & MxM_E_E_MATR) && (E_DATA & MxN_E_N_MATR) && (E_DATA & NxM_N_E_MATR) && (E_DATA & MxN_E_F_MATR) && (E_DATA & NxM_F_E_MATR) && (DIM == 2)
 
 /*
 void fill_Ax_for_general_matr(tGrid,Z,Ap,Ai,Ax)
@@ -4005,10 +4126,6 @@ DOUBLE *Ax;
 
 #else
 
-void fill_Ap_and_Ai_general(tGrid,Ap,Ai,nj,maxj,max,kk,nn,mm)
-GRID *tGrid; INT *Ap, *Ai, *nj, maxj, max, kk, nn, mm;
-{ eprintf("Error: fill_Ap_and_Ai_general not available.\n"); }
-
 void fill_Ax_for_general_matr(tGrid,Z,Ap,Ai,Ax,kk,nn,mm)
 GRID *tGrid; INT Z, *Ap, *Ai, kk, nn, mm; DOUBLE *Ax;
 { eprintf("Error: fill_Ax_for_general_matr not available.\n"); }
@@ -4084,6 +4201,8 @@ INT *Ap, *Ai, *nj, maxj, max, type, space;
    switch(type){
    case Q_SN:    fill_Ap_and_Ai_for_one_node_matr(tGrid,Ap,Ai,nj,maxj,max);
         break;
+   case Q_SNSF:  fill_Ap_and_Ai_general(tGrid,Ap,Ai,nj,maxj,max,1,1,0);
+        break;
    case Q_SNSE:  fill_Ap_and_Ai_for_sn_se(tGrid,Ap,Ai,nj,maxj,max);
         break;
    case Q_GENERAL: fill_Ap_and_Ai_general(tGrid,Ap,Ai,nj,maxj,max,
@@ -4102,6 +4221,8 @@ DOUBLE *Ax;
 {
    switch(type){
    case Q_SN:    fill_Ax_for_one_node_matr(tGrid,Z,Ap,Ai,Ax);
+        break;
+   case Q_SNSF:  fill_Ax_for_sn_sf(tGrid,Z,Ap,Ai,Ax);
         break;
    case Q_SNSE:  fill_Ax_for_sn_se_matr(tGrid,Z,Ap,Ai,Ax);
         break;
@@ -4122,6 +4243,8 @@ DOUBLE *x;
    switch(type){
    case Q_SN:    make_vector_from_sn(tGrid,u,x);
         break;
+   case Q_SNSF:  make_vector_from_grid_data_sn_sf(tGrid,u,x);
+        break;
    case Q_SNSE:  make_vector_from_sn_se(tGrid,u,x);
         break;
    case Q_GENERAL: make_vector_from_grid_data_general(tGrid,u,x,
@@ -4140,6 +4263,8 @@ DOUBLE *x;
 {
    switch(type){
    case Q_SN:    make_sn_from_vector(tGrid,u,x);
+        break;
+   case Q_SNSF:  make_grid_data_from_vector_sn_sf(tGrid,u,x);
         break;
    case Q_SNSE:  make_sn_se_from_vector(tGrid,u,x);
         break;

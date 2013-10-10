@@ -522,11 +522,51 @@ FLOAT r;
    }
 }
 
+void smakeAT_sn_sf(tGrid,Z,a)
+GRID *tGrid;
+INT Z, a;
+{
+   NODE *theNode, *pnode;
+   FACE *theFace, *pface;
+   LINK *pl, *pli;
+   NFLINK *pnfl;
+   FLINK *pfl, *pfli;
+   FNLINK *pfnl;
+	
+   for (theNode = FIRSTN(tGrid); theNode; theNode = SUCC(theNode)){
+      COEFFN(theNode,a) = COEFFN(theNode,Z);
+      for (pl = TSTART(theNode); pl; pl = NEXT(pl)){
+         pnode = NBNODE(pl);
+         for (pli = TSTART(pnode); pli->nbnode != theNode; pli = NEXT(pli));
+         COEFFL(pl,a) = COEFFL(pli,Z);
+      }
+      for (pnfl = TNFSTART(theNode); pnfl; pnfl = NEXT(pnfl)){
+         pface = NBFACE(pnfl);
+         for (pfnl = TFNSTART(pface); pfnl->nbnode != theNode; pfnl=NEXT(pfnl));
+         COEFFL(pnfl,a) = COEFFL(pfnl,Z);
+         COEFFL(pfnl,a) = COEFFL(pnfl,Z);
+      } 
+   }
+   for (theFace = FIRSTF(tGrid); theFace; theFace = SUCC(theFace)){
+      COEFF_FF(theFace,a) = COEFF_FF(theFace,Z);
+      for (pfl = TFSTART(theFace); pfl; pfl = NEXT(pfl)){
+         pface = NBFACE(pfl);
+         for (pfli = TFSTART(pface); pfli->nbface != theFace; pfli =NEXT(pfli));
+         COEFF_FL(pfl,a) = COEFF_FL(pfli,Z);
+      }
+   }
+}
+
 #else
 
 void sset_mat_value_sn_sf(theGrid,Z,r)
 GRID *theGrid; INT Z; FLOAT r;
 {  eprintf("Error: sset_mat_value_sn_sf not available.\n");  }
+
+void smakeAT_sn_sf(tGrid,Z,a)
+GRID *tGrid;
+INT Z, a;
+{  eprintf("Error: smakeAT_sn_sf not available.\n");  }
 
 #endif
 
@@ -6258,6 +6298,47 @@ FLOAT r;
         break;
    default:
         eprintf("Error: set_mat_value not available.\n");
+        break;
+   }
+}
+
+void make_AT(tGrid,Z,a,row_type,column_type,structure)
+GRID *tGrid;                                                      /* a := Z^T */
+INT Z, a, row_type, column_type, structure;
+{
+   switch(row_type){
+   case Q_SN: 
+        switch(column_type){
+           case Q_SN: smakeAT(tGrid,Z,a,0);
+                break;
+           default:
+                eprintf("Error: make_AT not available.\n");
+                break;
+        }
+        break;
+   case Q_SNSF: 
+        switch(column_type){
+           case Q_SNSF: smakeAT_sn_sf(tGrid,Z,a);
+                break;
+           default:
+                eprintf("Error: make_AT not available.\n");
+                break;
+        }
+        break;
+   case Q_VNSF: 
+        switch(column_type){
+           case Q_VNSF: if (structure & Q_NEBDIAG)
+                           smakeAT_vn_sf(tGrid,Z,a);
+                        else
+                           eprintf("Error: make_AT not available.\n");
+                break;
+           default:
+                eprintf("Error: make_AT not available.\n");
+                break;
+        }
+        break;
+   default:
+        eprintf("Error: make_AT not available.\n");
         break;
    }
 }

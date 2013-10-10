@@ -12,19 +12,19 @@ double RES_SCALING=0.1;
 double MAX_CROSS_DER=1.;
 double CROSS_DER_WEIGHT=0.;
 double RES_NORM_WEIGHT=1.;
-#define TAU_SPACE     P1_NC          /*  P0, P1_NC, P1C, ...  */
+#define TAU_SPACE     P0           /*  P0, P1_NC, P1C, ...  */
 int TAU_VARIABLE=1;                /*  in which index is tau saved, changeable
                                                      during the program run  */
 #define A_IN_FCN 1.
 #define SCALED_IND    NO           /*  YES or NO  */
 #define PAR_TYPE      Q_VE
-#define USE_GRAD_IND  YES
+#define USE_GRAD_IND  NO
 #define ELEMENT_TYPE  SIMPLEX      /*  SIMPLEX or CUBE                        */
 #define SC_EXAMPLE    9            /*  8, 81, 9, 20, 55, 66, 67, 800  */
 #define COARSE_GRID   cube         /*  cube or step2_xy  */
 //#define COARSE_GRID   step2_xy      /*  cube or step2_xy  */
 #define REFINEMENTS   0
-#define U_SPACE       P1C          /*  P1_NC, P1_MOD or P1C  */
+#define U_SPACE       P2C          /*  P1_NC, P1_MOD, P1C, P2C  */
 #define SDFEM         YES          /*  YES or NO  */
 #define DIR_DIAM      YES          /*  YES or NO .. diameter influenced by b  */
 #define USE_QUADRATURE NO          /*  YES or NO  */
@@ -115,21 +115,21 @@ int     NVX=            9;
 int     NVY=            9;
 int     TNF;                    /* total number of inner faces                */
 
-#define V_MATR          2 
-#define F_MATR          2
-#define B_MATR          1
-#define S_MATR          3
-#define D_MATR          1
+#define V_MATR          24 
+#define F_MATR          24
+#define B_MATR          24
+#define S_MATR          24
+#define D_MATR          24
 #define NS_VECT         272
 #define NV_VECT         24
 #define NM_VECT         24
-#define FS_VECT         2
+#define FS_VECT         272
 #define FV_VECT         24
 #define FM_VECT         24
 #define FDV_VECT        24
 #define SNS_VECT        24
 #define SFS_VECT        24
-#define LG_VECT         1
+#define LG_VECT         24
 #define EL_VECT         272
 #define EL_VECTD        272
 #define EL_VECTN        272

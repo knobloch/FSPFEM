@@ -4288,7 +4288,94 @@ ELEMENT *pel; FLOAT b[DIM2][DIM2], eps, (*bb0)(), (*bb1)(), (*react)(), (*rhs)()
 
 #endif
 
-#if TAU_SPACE == P0
+#if (N_DATA & SCALAR_NODE_DATA) && (F_DATA & SCALAR_FACE_DATA)
+
+double cd_res_times_p2c_test_cd_res(pel,b,u,v,i,eps,bb0,bb1,react,rhs)
+ELEMENT *pel;
+FLOAT b[DIM2][DIM2], eps, (*bb0)(), (*bb1)(), (*react)(), (*rhs)();
+INT u, v, i;
+{
+   FLOAT *x1, *x2, *x3, x112[DIM], x113[DIM], x221[DIM], x223[DIM], x331[DIM], 
+         x332[DIM], x123[DIM], 
+         p1, p2, p3, p112, p113, p221, p223, p331, p332, p123,
+         q1, q2, q3, q112, q113, q221, q223, q331, q332, q123;
+
+   VERTICES_OF_ELEMENT(x1, x2, x3, pel);
+   points(x1, x2, x3, x112, x113, x221, x223, x331, x332, x123);
+   p1   = scalar_conv_diff_res(pel,x1,  b,u,P2C,eps,bb0,bb1,react,rhs);
+   p2   = scalar_conv_diff_res(pel,x2,  b,u,P2C,eps,bb0,bb1,react,rhs);
+   p3   = scalar_conv_diff_res(pel,x3,  b,u,P2C,eps,bb0,bb1,react,rhs);
+   p112 = scalar_conv_diff_res(pel,x112,b,u,P2C,eps,bb0,bb1,react,rhs);
+   p113 = scalar_conv_diff_res(pel,x113,b,u,P2C,eps,bb0,bb1,react,rhs);
+   p221 = scalar_conv_diff_res(pel,x221,b,u,P2C,eps,bb0,bb1,react,rhs);
+   p223 = scalar_conv_diff_res(pel,x223,b,u,P2C,eps,bb0,bb1,react,rhs);
+   p331 = scalar_conv_diff_res(pel,x331,b,u,P2C,eps,bb0,bb1,react,rhs);
+   p332 = scalar_conv_diff_res(pel,x332,b,u,P2C,eps,bb0,bb1,react,rhs);
+   p123 = scalar_conv_diff_res(pel,x123,b,u,P2C,eps,bb0,bb1,react,rhs);
+   NDS(pel->n[0],v) = NDS(pel->n[1],v) = NDS(pel->n[2],v) = 0.;
+   NDS(pel->n[i],v) = 1.;
+   q1   = scalar_conv_diff_res(pel,x1,  b,v,P2C,eps,bb0,bb1,react,zero_func);
+   q2   = scalar_conv_diff_res(pel,x2,  b,v,P2C,eps,bb0,bb1,react,zero_func);
+   q3   = scalar_conv_diff_res(pel,x3,  b,v,P2C,eps,bb0,bb1,react,zero_func);
+   q112 = scalar_conv_diff_res(pel,x112,b,v,P2C,eps,bb0,bb1,react,zero_func);
+   q113 = scalar_conv_diff_res(pel,x113,b,v,P2C,eps,bb0,bb1,react,zero_func);
+   q221 = scalar_conv_diff_res(pel,x221,b,v,P2C,eps,bb0,bb1,react,zero_func);
+   q223 = scalar_conv_diff_res(pel,x223,b,v,P2C,eps,bb0,bb1,react,zero_func);
+   q331 = scalar_conv_diff_res(pel,x331,b,v,P2C,eps,bb0,bb1,react,zero_func);
+   q332 = scalar_conv_diff_res(pel,x332,b,v,P2C,eps,bb0,bb1,react,zero_func);
+   q123 = scalar_conv_diff_res(pel,x123,b,v,P2C,eps,bb0,bb1,react,zero_func);
+   return(pq3(p1,p2,p3,p112,p113,p221,p223,p331,p332,p123,
+              q1,q2,q3,q112,q113,q221,q223,q331,q332,q123)*VOLUME(pel));
+}
+
+double cd_res_times_p2c_ftest_cd_res(pel,b,u,v,i,eps,bb0,bb1,react,rhs)
+ELEMENT *pel;
+FLOAT b[DIM2][DIM2], eps, (*bb0)(), (*bb1)(), (*react)(), (*rhs)();
+INT u, v, i;
+{
+   FLOAT *x1, *x2, *x3, x112[DIM], x113[DIM], x221[DIM], x223[DIM], x331[DIM], 
+         x332[DIM], x123[DIM], 
+         p1, p2, p3, p112, p113, p221, p223, p331, p332, p123,
+         q1, q2, q3, q112, q113, q221, q223, q331, q332, q123;
+
+   VERTICES_OF_ELEMENT(x1, x2, x3, pel);
+   points(x1, x2, x3, x112, x113, x221, x223, x331, x332, x123);
+   p1   = scalar_conv_diff_res(pel,x1,  b,u,P2C,eps,bb0,bb1,react,rhs);
+   p2   = scalar_conv_diff_res(pel,x2,  b,u,P2C,eps,bb0,bb1,react,rhs);
+   p3   = scalar_conv_diff_res(pel,x3,  b,u,P2C,eps,bb0,bb1,react,rhs);
+   p112 = scalar_conv_diff_res(pel,x112,b,u,P2C,eps,bb0,bb1,react,rhs);
+   p113 = scalar_conv_diff_res(pel,x113,b,u,P2C,eps,bb0,bb1,react,rhs);
+   p221 = scalar_conv_diff_res(pel,x221,b,u,P2C,eps,bb0,bb1,react,rhs);
+   p223 = scalar_conv_diff_res(pel,x223,b,u,P2C,eps,bb0,bb1,react,rhs);
+   p331 = scalar_conv_diff_res(pel,x331,b,u,P2C,eps,bb0,bb1,react,rhs);
+   p332 = scalar_conv_diff_res(pel,x332,b,u,P2C,eps,bb0,bb1,react,rhs);
+   p123 = scalar_conv_diff_res(pel,x123,b,u,P2C,eps,bb0,bb1,react,rhs);
+   NDS(pel->n[0],v) = NDS(pel->n[1],v) = NDS(pel->n[2],v) = 0.;
+   FD(pel->f[0],v) = FD(pel->f[1],v) = FD(pel->f[2],v) = 0.;
+   FD(pel->f[i],v) = 1.;
+   q1   = scalar_conv_diff_res(pel,x1,  b,v,P2C,eps,bb0,bb1,react,zero_func);
+   q2   = scalar_conv_diff_res(pel,x2,  b,v,P2C,eps,bb0,bb1,react,zero_func);
+   q3   = scalar_conv_diff_res(pel,x3,  b,v,P2C,eps,bb0,bb1,react,zero_func);
+   q112 = scalar_conv_diff_res(pel,x112,b,v,P2C,eps,bb0,bb1,react,zero_func);
+   q113 = scalar_conv_diff_res(pel,x113,b,v,P2C,eps,bb0,bb1,react,zero_func);
+   q221 = scalar_conv_diff_res(pel,x221,b,v,P2C,eps,bb0,bb1,react,zero_func);
+   q223 = scalar_conv_diff_res(pel,x223,b,v,P2C,eps,bb0,bb1,react,zero_func);
+   q331 = scalar_conv_diff_res(pel,x331,b,v,P2C,eps,bb0,bb1,react,zero_func);
+   q332 = scalar_conv_diff_res(pel,x332,b,v,P2C,eps,bb0,bb1,react,zero_func);
+   q123 = scalar_conv_diff_res(pel,x123,b,v,P2C,eps,bb0,bb1,react,zero_func);
+   return(pq3(p1,p2,p3,p112,p113,p221,p223,p331,p332,p123,
+              q1,q2,q3,q112,q113,q221,q223,q331,q332,q123)*VOLUME(pel));
+}
+
+#else
+
+double cd_res_times_ftest_cd_res(pel,b,u,v,i,eps,bb0,bb1,react,rhs)
+ELEMENT *pel; FLOAT b[DIM2][DIM2], eps, (*bb0)(), (*bb1)(), (*react)(), (*rhs)(); INT u, v, i;
+{  eprintf("Error: cd_res_times_ftest_cd_res not available.\n");  }
+
+#endif
+
+#if (TAU_SPACE == P0) && (E_DATA & SCALAR_ELEMENT_DATA)
 
 void cd_res_times_sd(pel,tot_der,b,u,v,eps,bb0,bb1,react,rhs)
 ELEMENT *pel;
@@ -4327,7 +4414,7 @@ INT tot_der, u, v;
               q1,q2,q3,q112,q113,q221,q223,q331,q332,q123)*VOLUME(pel);
 }
 
-#elif TAU_SPACE == P1C
+#elif (TAU_SPACE == P1C) && (N_DATA & SCALAR_NODE_DATA)
 
 void cd_res_times_sd(pel,tot_der,b,u,v,eps,bb0,bb1,react,rhs)
 ELEMENT *pel;
@@ -4372,7 +4459,7 @@ INT tot_der, u, v;
               q1,q2,q3,q112,q113,q221,q223,q331,q332,q123)*VOLUME(pel);
 }
 
-#elif TAU_SPACE == P1_NC
+#elif (TAU_SPACE == P1_NC) && (E_DATA & SCALAR_DATA_IN_ELEMENT_NODES)
 
 void cd_res_times_sd(pel,tot_der,b,u,v,eps,bb0,bb1,react,rhs)
 ELEMENT *pel;

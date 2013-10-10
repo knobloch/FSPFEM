@@ -207,6 +207,12 @@
 
 #endif
 
+
+
+
+
+
+
 #if P_SPACE == NONE
 
 #if U_SPACE==P1_NC
@@ -302,7 +308,7 @@
 #define DATA_S          15
 #define N_DATA          73 
 #define F_DATA          273
-#define E_DATA          0
+#define E_DATA          (5|E_TAU|E_TAU_SOLD)
 #define T_FOR_BC        2
 
 #elif U_SPACE == Q1ROT
