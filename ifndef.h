@@ -292,6 +292,10 @@
 #define SC_EXAMPLE 0
 #endif
 
+#ifndef COMPUTE_SC
+#define COMPUTE_SC NO
+#endif
+
 #ifndef CUBE_TYPE
 #define CUBE_TYPE 1
 #endif

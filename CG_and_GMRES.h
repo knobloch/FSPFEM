@@ -169,6 +169,22 @@ void (*multX)();
    }
    MACRO4_FOR_GMRES
    mult_and_add2_for_GMRES(tGrid,g,u,j,k,t,type);
+   
+   
+   
+   
+   
+   
+   
+  // printf("TADY");
+   
+   
+   
+   
+   
+   
+   
+   
    return(fabs(g[j+1]));
 }
 
