@@ -1,0 +1,25 @@
+Program prelozite v linuxu prikazem (napr.):
+
+gcc -fexceptions -I/home/lukas/Programy/SuiteSparse/AMD/Include
+-I/home/lukas/Programy/SuiteSparse/UMFPACK/Include
+-I/home/lukas/Programy/SuiteSparse/UFconfig -o a.out main.c -lumfpack -lm
+
+Vznikne spustitelny soubor a.out.
+
+Program vytvori ruzne soubory: 
+sol_graph.gnu, sol_graph.grid_gnu - reseni (sit) pred optimalizaci
+sol_graph_opt.gnu, sol_graph_opt.grid_gnu - reseni (sit) po optimalizaci
+profile_x.gnu - rez grafem (y = const.)
+profile_y.gnu - rez grafem (x = const.)
+graph_of_minim.txt - postup minimalizace estimatoru
+
+Reseni lze zobrazit v programu gnuplot prikazem
+splot "jmeno_souboru" w l
+napr.
+splot "sol_graph_opt.gnu" w l
+
+Pri prohlizeni programu zacnete s funkci optimize_stab_par, ktera je
+v souboru tests.h. Zde se zadefinuje pocatecni stablizacni parametr,
+vyresi diskretni problem, ulozi reseni, vypocita novy stablizacni parametr
+pomoci dane metody (napr. L-SR1), vyresi se diskretni problem s novym
+stabilizacnim parametrem a ulozi se reseni.

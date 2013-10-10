@@ -108,7 +108,7 @@ main()
       mg = &multigrid;
       FIRSTGRID(mg) = grids;
       
-      for (NV = 3; NV < 362; NV++)
+      for (NV = 3; NV < 36; NV++)
          if(NV == NV_POINTS){
             NVX = NVY = NV;
 //            NVX = 21;
