@@ -1522,6 +1522,13 @@ NODE *n0, *n1, *n2; FACE *fa0, *fa1, *fa2; INT v, Z; FLOAT *s, *c, b0[DIM2], b1[
     w12*cz + z12*c + 2*c*cz + 12*(z01*w1+z02*w2+w01*z1+w02*z2-w12*z12+         \
     s*cz +sz*c) + 4*(w02*z01+w01*z02-w12*sz-z12*s) )/5040.)
 
+/*  2*int(int(l0*l0*l0*w*z,y=0..1-x),x=0..1)  */
+#define CONV_INT_L0_L0_L0(w0,w1,w2,w12,w02,w01,z0,z1,z2,z12,z02,z01,s,c,sz,cz) \
+  ((-2*w12*z12+4*c*cz+6*(w02*z01+w01*z02)+9*(-w2*z12-w1*z12-w12*z1-w12*z2)+    \
+    16*(w01*z01+w02*z02)+18*(z02*w2+w02*z2+w1*z01+w01*z1+s*cz+sz*c)+           \
+    72*(w02*z0+w0*z02+w0*z01+w01*z0-w2*z2-w1*z1)+108*(-w1*z2-w2*z1)+144*s*sz+  \
+    576*w0*z0)/15120.)
+
 /*  2*int(int(l0*l0*l1*w*z,y=0..1-x),x=0..1))  */
 #define CONV_INT_L0_L0_L1(w0,w1,w2,w12,w02,w01,z0,z1,z2,z12,z02,z01,s,c,sz,cz) \
   ((120*w0*z0+24*s*sz + 9*(s*cz+c*sz) + 48*(w1*z0+w0*z1+w1*z1) +               \
@@ -1535,6 +1542,33 @@ NODE *n0, *n1, *n2; FACE *fa0, *fa1, *fa2; INT v, Z; FLOAT *s, *c, b0[DIM2], b1[
     z01*w01 + z02*w02+z12*w12 -                                                \
     3*(w0*z12+w1*z02+w2*z01+z0*w12+z1*w02+z2*w01))/15120.)
 
+/*  2*int(int(l0*l0*l0*l0*w*z,y=0..1-x),x=0..1))  */
+#define CONV_INT_L0_L0_L0_L0(w0,w1,w2,w12,w02,w01,z0,z1,z2,z12,z02,z01,s,c,sz,cz)\
+  ((-3*w12*z12+5*c*cz+10*(w02*z01+w01*z02)+15*(-w2*z12-w1*z12-w12*z1-w12*z2)+  \
+    25*(w01*z1+w1*z01+w02*z02+w01*z01+z02*w2+w02*z2+s*cz+sz*c)+                \
+    125*(w0*z02+w02*z0+w01*z0+w0*z01)+135*(-w2*z2-w1*z1)+180*(-w1*z2-w2*z1)+   \
+    225*s*sz+1125*w0*z0)/37800.)
+
+/*  2*int(int(l0*l0*l0*l1*w*z,y=0..1-x),x=0..1))  */
+#define CONV_INT_L0_L0_L0_L1(w0,w1,w2,w12,w02,w01,z0,z1,z2,z12,z02,z01,s,c,sz,cz)\
+  ((4*(-w01*z12-w12*z01)+5*(-w1*z12-w12*z1)+6*(-z02*w12-w02*z12)-7*w12*z12+    \
+    10*(-w2*z12-w12*z2+c*cz)+20*(w01*z01+s*cz+c*sz)+30*(w02*z0+w0*z02)+        \
+    40*(w01*z1+w1*z01)+45*(w0*z2+w2*z0+s*sz)+80*(w0*z01+w01*z0)+               \
+    90*w1*z1+135*(w1*z0+w0*z1)+405*w0*z0)/75600.)
+
+/*  2*int(int(l0*l0*l1*l1*w*z,y=0..1-x),x=0..1))  */
+#define CONV_INT_L0_L0_L1_L1(w0,w1,w2,w12,w02,w01,z0,z1,z2,z12,z02,z01,s,c,sz,cz)\
+  ((2*(-w12*z12-w02*z02)+3*(-z02*w12-w02*z12)+                                 \
+    5*(-w02*z2+w02*z0+w0*z02+w12*z1+w1*z12-z02*w2-w2*z12-w12*z2)+6*c*cz+       \
+    15*(-w2*z2+s*cz+sz*c)+18*w01*z01+45*(w01*z1+w01*z0+w0*z01+w1*z01+s*sz)+    \
+    90*w1*z0+90*w0*z1+135*(w0*z0+w1*z1))/75600.)
+
+/*  2*int(int(l0*l0*l1*l2*w*z,y=0..1-x),x=0..1))  */
+#define CONV_INT_L0_L0_L1_L2(w0,w1,w2,w12,w02,w01,z0,z1,z2,z12,z02,z01,s,c,sz,cz)\
+  ((3*(w02*z02+w01*z01+c*cz)+5*(z02*w2+w02*z2+w1*z01+w01*z1)+                  \
+    10*(w0*z02+w01*z02+w02*z0+w02*z01+w0*z01+w01*z0+s*cz+c*sz)-                \
+    15*(w1*z2+w2*z1)+45*(w0*z0+s*sz))/75600.)
+
 /*  2*int(int(l0*w*z,y=0..1-x),x=0..1)  */
 #define CONV_INT_L0(w0,w1,w2,w12,w02,w01,z0,z1,z2,z12,z02,z01,s,c,sz,cz)       \
   ((6*(w01*z01+w02*z02) + 42*s*sz + 21*(s*cz +sz*c) + 2*(w12*cz+z12*c-w12*z12)-\
@@ -1546,7 +1580,6 @@ NODE *n0, *n1, *n2; FACE *fa0, *fa1, *fa2; INT v, Z; FLOAT *s, *c, b0[DIM2], b1[
 #define CONV_INT(w0,w1,w2,w12,w02,w01,z0,z1,z2,z12,z02,z01,s,c,sz,cz)          \
   ((15*(s*sz+w0*z0+w1*z1+w2*z2)+6*(s*cz +sz*c) + c*cz+w01*z01+w02*z02+w12*z12- \
     3*(w0*z12+w1*z02+w2*z01+z0*w12+z1*w02+z2*w01))/180.)
-
 
 /*  2*int(int(w*f,y=0..1-x),x=0..1))  */
 #define CONV_RHS_INT(w0,w1,w2,w12,w02,w01,                                     \
@@ -1572,6 +1605,29 @@ NODE *n0, *n1, *n2; FACE *fa0, *fa1, *fa2; INT v, Z; FLOAT *s, *c, b0[DIM2], b1[
     540*w0*f002+24*w1*f2-36*w1*f220+72*w1*f002+11*w01*f2+648*w0*f012-          \
     36*w0*f221+144*w2*f002+144*w2*f220+432*w2*f012+72*w2*f221+162*w02*f012+    \
     9*w02*f221+9*w12*f002+2*w12*f2+9*w12*f220+6*w02*f0)/10080.)
+
+/*  2*int(int(l0*l0*w*f,y=0..1-x),x=0..1))  */
+#define CONV_RHS_INT_L0_L0(w0,w1,w2,w12,w02,w01,                               \
+                     f0,f1,f2,f001,f002,f110,f112,f220,f221,f012)              \
+  ((6*w02*f0+132*w0*f0+6*w01*f0+3*w02*f2+72*w02*f002+33*w0*f2-108*w0*f220+     \
+    378*w0*f002+6*w2*f0+4*w2*f2+27*w2*f220+108*w2*f002+6*w01*f2-18*w01*f220+   \
+    36*w01*f002+w12*f2+9*w12*f002+36*w02*f001+72*w02*f012+6*w1*f0+11*w1*f2-    \
+    27*w1*f220+54*w1*f002+378*w0*f001+324*w0*f012-27*w0*f221+54*w2*f001+       \
+    162*w2*f012+9*w2*f221+72*w01*f001+72*w01*f012-9*w01*f221+9*w12*f001+       \
+    36*w12*f012-18*w02*f110-9*w02*f112+108*w1*f001+162*w1*f012-18*w1*f221-     \
+    108*w0*f110-27*w0*f112-27*w2*f110-18*w2*f112+6*w02*f1+27*w1*f110+          \
+    9*w1*f112+33*w0*f1+11*w2*f1+3*w01*f1+w12*f1+4*w1*f1)/10080.)
+
+/*  2*int(int(l0*l1*w*f,y=0..1-x),x=0..1))  */
+#define CONV_RHS_INT_L0_L1(w0,w1,w2,w12,w02,w01,                               \
+                     f0,f1,f2,f001,f002,f110,f112,f220,f221,f012)              \
+  ((6*w0*f0+w02*f2+9*w02*f002+11*w0*f2-27*w0*f220+54*w0*f002+2*w2*f0+2*w2*f2+  \
+  9*w2*f220+9*w2*f002+4*w01*f2-9*w01*f220+9*w01*f002+w12*f0+w12*f2+9*w02*f001+ \
+  36*w02*f012+4*w1*f0+11*w1*f2-18*w1*f220+9*w1*f002+108*w0*f001+162*w0*f012-   \
+  18*w0*f221+9*w2*f001+108*w2*f012+9*w2*f221+27*w01*f001+54*w01*f012-          \
+  9*w01*f221+36*w12*f012+27*w1*f001+162*w1*f012-27*w1*f221+27*w0*f110+         \
+  9*w0*f112+9*w2*f110+9*w2*f112+27*w01*f110+9*w01*f112+9*w12*f110+             \
+  9*w12*f112+w02*f1+108*w1*f110+54*w1*f112+4*w0*f1+2*w2*f1+6*w1*f1)/10080.)
 
 #if (N_DATA & ONE_NODE_MATR) && (N_DATA & ONE_NODE_FACE_MATR) && (F_DATA & ONE_FACE_MATR) && (F_DATA & ONE_FACE_NODE_MATR) && (DATA_S & N_LINK_TO_NODES) && (DATA_S & N_LINK_TO_FACES) && (DATA_S & F_LINK_TO_FACES) && (DATA_S & F_LINK_TO_NODES)
 
@@ -1687,6 +1743,261 @@ FLOAT *s, *c, vn[SIDES][SIDES], vf[SIDES][SIDES], ndetB;
    }
 }
 
+/*  stiff. matrix corresponding to \int_K (v\cdot\nabla u)(v\cdot\nabla v)\dx */
+void conv_stab_ij_p1nc_sn_sf(i,j,k,n0,n1,n2,fa0,fa1,fa2,Z,s,c,vn,vf,ndetB,delta_0,delta_1,delta_2)
+NODE *n0, *n1, *n2; 
+FACE *fa0, *fa1, *fa2;
+INT i, j, k, Z;
+FLOAT *s, *c, vn[SIDES][SIDES], vf[SIDES][SIDES], ndetB;
+{
+   LINK *pli;
+   FLINK *pfli;
+   NFLINK *pnf;
+   FNLINK *pfn;
+   FLOAT p, p00, p01, p02;
+  
+   COEFFN(n0,Z) += 
+              (CONV_INT_L0(vn[i][i],vn[j][i],vn[k][i],vf[i][i],vf[j][i],vf[k][i],
+                        vn[i][i],vn[j][i],vn[k][i],vf[i][i],vf[j][i],vf[k][i], 
+                        s[i],c[i],s[i],c[i])*delta_0 +
+               CONV_INT_L0(vn[j][i],vn[k][i],vn[i][i],vf[j][i],vf[k][i],vf[i][i],
+                        vn[j][i],vn[k][i],vn[i][i],vf[j][i],vf[k][i],vf[i][i], 
+                        s[i],c[i],s[i],c[i])*delta_1 +
+               CONV_INT_L0(vn[k][i],vn[i][i],vn[j][i],vf[k][i],vf[i][i],vf[j][i],
+                        vn[k][i],vn[i][i],vn[j][i],vf[k][i],vf[i][i],vf[j][i], 
+                        s[i],c[i],s[i],c[i])*delta_2)*ndetB;
+   if (n1->index > n0->index){
+      p = (CONV_INT_L0(vn[i][i],vn[j][i],vn[k][i],vf[i][i],vf[j][i],vf[k][i],
+                       vn[i][j],vn[j][j],vn[k][j],vf[i][j],vf[j][j],vf[k][j], 
+                       s[i],c[i],s[j],c[j])*delta_0 +
+           CONV_INT_L0(vn[j][i],vn[k][i],vn[i][i],vf[j][i],vf[k][i],vf[i][i],
+                       vn[j][j],vn[k][j],vn[i][j],vf[j][j],vf[k][j],vf[i][j], 
+                       s[i],c[i],s[j],c[j])*delta_1 +
+           CONV_INT_L0(vn[k][i],vn[i][i],vn[j][i],vf[k][i],vf[i][i],vf[j][i],
+                       vn[k][j],vn[i][j],vn[j][j],vf[k][j],vf[i][j],vf[j][j], 
+                       s[i],c[i],s[j],c[j])*delta_2)*ndetB;
+      for (pli = n0->tstart; pli->nbnode != n1; pli=pli->next);
+      COEFFL(pli,Z) += p;
+      for (pli = n1->tstart; pli->nbnode != n0; pli=pli->next);
+      COEFFL(pli,Z) += p;
+   }
+   if (n2->index > n0->index){
+      p = (CONV_INT_L0(vn[i][i],vn[j][i],vn[k][i],vf[i][i],vf[j][i],vf[k][i],
+                       vn[i][k],vn[j][k],vn[k][k],vf[i][k],vf[j][k],vf[k][k], 
+                       s[i],c[i],s[k],c[k])*delta_0 +
+           CONV_INT_L0(vn[j][i],vn[k][i],vn[i][i],vf[j][i],vf[k][i],vf[i][i],
+                       vn[j][k],vn[k][k],vn[i][k],vf[j][k],vf[k][k],vf[i][k], 
+                       s[i],c[i],s[k],c[k])*delta_1 +
+           CONV_INT_L0(vn[k][i],vn[i][i],vn[j][i],vf[k][i],vf[i][i],vf[j][i],
+                       vn[k][k],vn[i][k],vn[j][k],vf[k][k],vf[i][k],vf[j][k], 
+                       s[i],c[i],s[k],c[k])*delta_2)*ndetB;
+      for (pli = n0->tstart; pli->nbnode != n2; pli=pli->next);
+      COEFFL(pli,Z) += p;
+      for (pli = n2->tstart; pli->nbnode != n0; pli=pli->next);
+      COEFFL(pli,Z) += p;
+   }
+
+   p00 = (CONV_INT_L1_L2(vn[k][i],vn[i][i],vn[j][i],vf[k][i],vf[i][i],vf[j][i],
+                         vn[k][k],vn[i][k],vn[j][k],vf[k][k],vf[i][k],vf[j][k],
+                         s[i],c[i],s[k],c[k])*delta_0 + 
+          CONV_INT_L0_L0(vn[j][i],vn[k][i],vn[i][i],vf[j][i],vf[k][i],vf[i][i],
+                         vn[j][k],vn[k][k],vn[i][k],vf[j][k],vf[k][k],vf[i][k],
+                         s[i],c[i],s[k],c[k])*delta_1 +
+          CONV_INT_L1_L2(vn[i][i],vn[j][i],vn[k][i],vf[i][i],vf[j][i],vf[k][i],
+                         vn[i][k],vn[j][k],vn[k][k],vf[i][k],vf[j][k],vf[k][k],
+                         s[i],c[i],s[k],c[k])*delta_2 +
+
+          CONV_INT_L1_L2(vn[j][i],vn[k][i],vn[i][i],vf[j][i],vf[k][i],vf[i][i],
+                         vn[j][j],vn[k][j],vn[i][j],vf[j][j],vf[k][j],vf[i][j],
+                         s[i],c[i],s[j],c[j])*delta_0 +
+          CONV_INT_L1_L2(vn[i][i],vn[j][i],vn[k][i],vf[i][i],vf[j][i],vf[k][i],
+                         vn[i][j],vn[j][j],vn[k][j],vf[i][j],vf[j][j],vf[k][j],
+                         s[i],c[i],s[j],c[j])*delta_1 +
+          CONV_INT_L0_L0(vn[k][i],vn[i][i],vn[j][i],vf[k][i],vf[i][i],vf[j][i],
+                         vn[k][j],vn[i][j],vn[j][j],vf[k][j],vf[i][j],vf[j][j],
+                         s[i],c[i],s[j],c[j])*delta_2
+         )*ndetB;
+
+   p01 = (CONV_INT_L0_L0(vn[i][i],vn[j][i],vn[k][i],vf[i][i],vf[j][i],vf[k][i],
+                         vn[i][k],vn[j][k],vn[k][k],vf[i][k],vf[j][k],vf[k][k], 
+                         s[i],c[i],s[k],c[k])*delta_0 +
+          CONV_INT_L1_L2(vn[k][i],vn[i][i],vn[j][i],vf[k][i],vf[i][i],vf[j][i],
+                         vn[k][k],vn[i][k],vn[j][k],vf[k][k],vf[i][k],vf[j][k], 
+                         s[i],c[i],s[k],c[k])*delta_1 +
+          CONV_INT_L1_L2(vn[j][i],vn[k][i],vn[i][i],vf[j][i],vf[k][i],vf[i][i],
+                         vn[j][k],vn[k][k],vn[i][k],vf[j][k],vf[k][k],vf[i][k], 
+                         s[i],c[i],s[k],c[k])*delta_2 +
+
+          CONV_INT_L1_L2(vn[j][i],vn[k][i],vn[i][i],vf[j][i],vf[k][i],vf[i][i],
+                         vn[j][i],vn[k][i],vn[i][i],vf[j][i],vf[k][i],vf[i][i],
+                         s[i],c[i],s[i],c[i])*delta_0 +
+          CONV_INT_L1_L2(vn[i][i],vn[j][i],vn[k][i],vf[i][i],vf[j][i],vf[k][i],
+                         vn[i][i],vn[j][i],vn[k][i],vf[i][i],vf[j][i],vf[k][i],
+                         s[i],c[i],s[i],c[i])*delta_1 +
+          CONV_INT_L0_L0(vn[k][i],vn[i][i],vn[j][i],vf[k][i],vf[i][i],vf[j][i],
+                         vn[k][i],vn[i][i],vn[j][i],vf[k][i],vf[i][i],vf[j][i],
+                         s[i],c[i],s[i],c[i])*delta_2
+         )*ndetB;
+
+   p02 = (CONV_INT_L0_L0(vn[i][i],vn[j][i],vn[k][i],vf[i][i],vf[j][i],vf[k][i],
+                         vn[i][j],vn[j][j],vn[k][j],vf[i][j],vf[j][j],vf[k][j], 
+                         s[i],c[i],s[j],c[j])*delta_0 +
+          CONV_INT_L1_L2(vn[k][i],vn[i][i],vn[j][i],vf[k][i],vf[i][i],vf[j][i],
+                         vn[k][j],vn[i][j],vn[j][j],vf[k][j],vf[i][j],vf[j][j], 
+                         s[i],c[i],s[j],c[j])*delta_1 +
+          CONV_INT_L1_L2(vn[j][i],vn[k][i],vn[i][i],vf[j][i],vf[k][i],vf[i][i],
+                         vn[j][j],vn[k][j],vn[i][j],vf[j][j],vf[k][j],vf[i][j], 
+                         s[i],c[i],s[j],c[j])*delta_2 +
+
+          CONV_INT_L1_L2(vn[k][i],vn[i][i],vn[j][i],vf[k][i],vf[i][i],vf[j][i],
+                         vn[k][i],vn[i][i],vn[j][i],vf[k][i],vf[i][i],vf[j][i],
+                         s[i],c[i],s[i],c[i])*delta_0 +
+          CONV_INT_L0_L0(vn[j][i],vn[k][i],vn[i][i],vf[j][i],vf[k][i],vf[i][i],
+                         vn[j][i],vn[k][i],vn[i][i],vf[j][i],vf[k][i],vf[i][i],
+                         s[i],c[i],s[i],c[i])*delta_1 +
+          CONV_INT_L1_L2(vn[i][i],vn[j][i],vn[k][i],vf[i][i],vf[j][i],vf[k][i],
+                         vn[i][i],vn[j][i],vn[k][i],vf[i][i],vf[j][i],vf[k][i],
+                         s[i],c[i],s[i],c[i])*delta_2
+         )*ndetB;
+
+   for (pnf=n0->tnfstart; pnf->nbface!=fa0; pnf=pnf->next);
+   COEFFL(pnf,Z) += p00;
+   putasij(n0->tnfstart,fa1,fa2,p01,p02,Z);
+   for (pfn=fa0->tfnstart; pfn->nbnode!=n0; pfn=pfn->next);
+   COEFFL(pfn,Z) += p00;
+   for (pfn=fa1->tfnstart; pfn->nbnode!=n0; pfn=pfn->next);
+   COEFFL(pfn,Z) += p01;
+   for (pfn=fa2->tfnstart; pfn->nbnode!=n0; pfn=pfn->next);
+   COEFFL(pfn,Z) += p02;
+ 
+   COEFF_FF(fa0,Z) += 
+         (CONV_INT_L0_L0_L1(vn[j][k],vn[i][k],vn[k][k],vf[j][k],vf[i][k],vf[k][k],
+                            vn[j][k],vn[i][k],vn[k][k],vf[j][k],vf[i][k],vf[k][k],
+                            s[k],c[k],s[k],c[k])*delta_0 +
+          CONV_INT_L0_L0_L0(vn[j][k],vn[i][k],vn[k][k],vf[j][k],vf[i][k],vf[k][k],
+                            vn[j][k],vn[i][k],vn[k][k],vf[j][k],vf[i][k],vf[k][k],
+                            s[k],c[k],s[k],c[k])*delta_1 +
+          CONV_INT_L0_L0_L1(vn[j][k],vn[k][k],vn[i][k],vf[j][k],vf[k][k],vf[i][k],
+                            vn[j][k],vn[k][k],vn[i][k],vf[j][k],vf[k][k],vf[i][k],
+                            s[k],c[k],s[k],c[k])*delta_2 +
+
+       2.*CONV_INT_L0_L1_L2(vn[i][j],vn[j][j],vn[k][j],vf[i][j],vf[j][j],vf[k][j],
+                            vn[i][k],vn[j][k],vn[k][k],vf[i][k],vf[j][k],vf[k][k], 
+                            s[j],c[j],s[k],c[k])*delta_0 +
+       2.*CONV_INT_L0_L0_L1(vn[j][j],vn[k][j],vn[i][j],vf[j][j],vf[k][j],vf[i][j],
+                            vn[j][k],vn[k][k],vn[i][k],vf[j][k],vf[k][k],vf[i][k], 
+                            s[j],c[j],s[k],c[k])*delta_1 +
+       2.*CONV_INT_L0_L0_L1(vn[k][j],vn[j][j],vn[i][j],vf[k][j],vf[j][j],vf[i][j],
+                            vn[k][k],vn[j][k],vn[i][k],vf[k][k],vf[j][k],vf[i][k], 
+                            s[j],c[j],s[k],c[k])*delta_2 +
+
+          CONV_INT_L0_L0_L1(vn[k][j],vn[i][j],vn[j][j],vf[k][j],vf[i][j],vf[j][j],
+                            vn[k][j],vn[i][j],vn[j][j],vf[k][j],vf[i][j],vf[j][j],
+                            s[j],c[j],s[j],c[j])*delta_0 +
+          CONV_INT_L0_L0_L1(vn[k][j],vn[j][j],vn[i][j],vf[k][j],vf[j][j],vf[i][j],
+                            vn[k][j],vn[j][j],vn[i][j],vf[k][j],vf[j][j],vf[i][j],
+                            s[j],c[j],s[j],c[j])*delta_1 +
+          CONV_INT_L0_L0_L0(vn[k][j],vn[j][j],vn[i][j],vf[k][j],vf[j][j],vf[i][j],
+                            vn[k][j],vn[j][j],vn[i][j],vf[k][j],vf[j][j],vf[i][j],
+                            s[j],c[j],s[j],c[j])*delta_2
+         )*ndetB;
+
+   if (fa1->index > fa0->index){
+      p = (CONV_INT_L0_L1_L2(vn[i][i],vn[j][i],vn[k][i],vf[i][i],vf[j][i],vf[k][i],
+                             vn[i][k],vn[j][k],vn[k][k],vf[i][k],vf[j][k],vf[k][k],
+                             s[i],c[i],s[k],c[k])*delta_0 +
+           CONV_INT_L0_L0_L1(vn[j][i],vn[k][i],vn[i][i],vf[j][i],vf[k][i],vf[i][i],
+                             vn[j][k],vn[k][k],vn[i][k],vf[j][k],vf[k][k],vf[i][k],
+                             s[i],c[i],s[k],c[k])*delta_1 +
+           CONV_INT_L0_L0_L1(vn[k][i],vn[j][i],vn[i][i],vf[k][i],vf[j][i],vf[i][i],
+                             vn[k][k],vn[j][k],vn[i][k],vf[k][k],vf[j][k],vf[i][k],
+                             s[i],c[i],s[k],c[k])*delta_2 +
+
+           CONV_INT_L0_L0_L1(vn[i][j],vn[k][j],vn[j][j],vf[i][j],vf[k][j],vf[j][j],
+                             vn[i][k],vn[k][k],vn[j][k],vf[i][k],vf[k][k],vf[j][k],
+                             s[j],c[j],s[k],c[k])*delta_0 +
+           CONV_INT_L0_L1_L2(vn[i][j],vn[j][j],vn[k][j],vf[i][j],vf[j][j],vf[k][j],
+                             vn[i][k],vn[j][k],vn[k][k],vf[i][k],vf[j][k],vf[k][k],
+                             s[j],c[j],s[k],c[k])*delta_1 +
+           CONV_INT_L0_L0_L1(vn[k][j],vn[i][j],vn[j][j],vf[k][j],vf[i][j],vf[j][j],
+                             vn[k][k],vn[i][k],vn[j][k],vf[k][k],vf[i][k],vf[j][k],
+                             s[j],c[j],s[k],c[k])*delta_2 +
+
+           CONV_INT_L0_L0_L1(vn[i][k],vn[j][k],vn[k][k],vf[i][k],vf[j][k],vf[k][k],
+                             vn[i][k],vn[j][k],vn[k][k],vf[i][k],vf[j][k],vf[k][k],
+                             s[k],c[k],s[k],c[k])*delta_0 +
+           CONV_INT_L0_L0_L1(vn[j][k],vn[i][k],vn[k][k],vf[j][k],vf[i][k],vf[k][k],
+                             vn[j][k],vn[i][k],vn[k][k],vf[j][k],vf[i][k],vf[k][k],
+                             s[k],c[k],s[k],c[k])*delta_1 +
+           CONV_INT_L0_L1_L2(vn[j][k],vn[i][k],vn[k][k],vf[j][k],vf[i][k],vf[k][k],
+                             vn[j][k],vn[i][k],vn[k][k],vf[j][k],vf[i][k],vf[k][k],
+                             s[k],c[k],s[k],c[k])*delta_2 +
+
+           CONV_INT_L0_L0_L1(vn[k][i],vn[i][i],vn[j][i],vf[k][i],vf[i][i],vf[j][i],
+                             vn[k][j],vn[i][j],vn[j][j],vf[k][j],vf[i][j],vf[j][j],
+                             s[i],c[i],s[j],c[j])*delta_0 +
+           CONV_INT_L0_L0_L1(vn[k][i],vn[j][i],vn[i][i],vf[k][i],vf[j][i],vf[i][i],
+                             vn[k][j],vn[j][j],vn[i][j],vf[k][j],vf[j][j],vf[i][j],
+                             s[i],c[i],s[j],c[j])*delta_1 +
+           CONV_INT_L0_L0_L0(vn[k][i],vn[i][i],vn[j][i],vf[k][i],vf[i][i],vf[j][i],
+                             vn[k][j],vn[i][j],vn[j][j],vf[k][j],vf[i][j],vf[j][j],
+                             s[i],c[i],s[j],c[j])*delta_2
+          )*ndetB;
+
+      for (pfli = fa0->tfstart; pfli->nbface != fa1; pfli = pfli->next);
+      COEFF_FL(pfli,Z) += p;
+      for (pfli = fa1->tfstart; pfli->nbface != fa0; pfli = pfli->next);
+      COEFF_FL(pfli,Z) += p;
+   }
+   if (fa2->index > fa0->index){
+      p = (CONV_INT_L0_L1_L2(vn[i][i],vn[j][i],vn[k][i],vf[i][i],vf[j][i],vf[k][i],
+                             vn[i][j],vn[j][j],vn[k][j],vf[i][j],vf[j][j],vf[k][j],
+                             s[i],c[i],s[j],c[j])*delta_0 +
+           CONV_INT_L0_L0_L1(vn[j][i],vn[k][i],vn[i][i],vf[j][i],vf[k][i],vf[i][i],
+                             vn[j][j],vn[k][j],vn[i][j],vf[j][j],vf[k][j],vf[i][j],
+                             s[i],c[i],s[j],c[j])*delta_1 +
+           CONV_INT_L0_L0_L1(vn[k][i],vn[j][i],vn[i][i],vf[k][i],vf[j][i],vf[i][i],
+                             vn[k][j],vn[j][j],vn[i][j],vf[k][j],vf[j][j],vf[i][j],
+                             s[i],c[i],s[j],c[j])*delta_2 +
+
+           CONV_INT_L0_L0_L1(vn[i][j],vn[k][j],vn[j][j],vf[i][j],vf[k][j],vf[j][j],
+                             vn[i][j],vn[k][j],vn[j][j],vf[i][j],vf[k][j],vf[j][j],
+                             s[j],c[j],s[j],c[j])*delta_0 +
+           CONV_INT_L0_L1_L2(vn[j][j],vn[k][j],vn[i][j],vf[j][j],vf[k][j],vf[i][j],
+                             vn[j][j],vn[k][j],vn[i][j],vf[j][j],vf[k][j],vf[i][j],
+                             s[j],c[j],s[j],c[j])*delta_1 +
+           CONV_INT_L0_L0_L1(vn[k][j],vn[i][j],vn[j][j],vf[k][j],vf[i][j],vf[j][j],
+                             vn[k][j],vn[i][j],vn[j][j],vf[k][j],vf[i][j],vf[j][j],
+                             s[j],c[j],s[j],c[j])*delta_2 +
+
+           CONV_INT_L0_L0_L1(vn[i][j],vn[j][j],vn[k][j],vf[i][j],vf[j][j],vf[k][j],
+                             vn[i][k],vn[j][k],vn[k][k],vf[i][k],vf[j][k],vf[k][k],
+                             s[j],c[j],s[k],c[k])*delta_0 +
+           CONV_INT_L0_L0_L1(vn[j][j],vn[i][j],vn[k][j],vf[j][j],vf[i][j],vf[k][j],
+                             vn[j][k],vn[i][k],vn[k][k],vf[j][k],vf[i][k],vf[k][k],
+                             s[j],c[j],s[k],c[k])*delta_1 +
+           CONV_INT_L0_L1_L2(vn[j][j],vn[i][j],vn[k][j],vf[j][j],vf[i][j],vf[k][j],
+                             vn[j][k],vn[i][k],vn[k][k],vf[j][k],vf[i][k],vf[k][k],
+                             s[j],c[j],s[k],c[k])*delta_2 +
+
+           CONV_INT_L0_L0_L1(vn[j][i],vn[i][i],vn[k][i],vf[j][i],vf[i][i],vf[k][i],
+                             vn[j][k],vn[i][k],vn[k][k],vf[j][k],vf[i][k],vf[k][k],
+                             s[i],c[i],s[k],c[k])*delta_0 +
+           CONV_INT_L0_L0_L0(vn[j][i],vn[k][i],vn[i][i],vf[j][i],vf[k][i],vf[i][i],
+                             vn[j][k],vn[k][k],vn[i][k],vf[j][k],vf[k][k],vf[i][k],
+                             s[i],c[i],s[k],c[k])*delta_1 +
+           CONV_INT_L0_L0_L1(vn[j][i],vn[k][i],vn[i][i],vf[j][i],vf[k][i],vf[i][i],
+                             vn[j][k],vn[k][k],vn[i][k],vf[j][k],vf[k][k],vf[i][k],
+                             s[i],c[i],s[k],c[k])*delta_2
+          )*ndetB;
+
+      for (pfli = fa0->tfstart; pfli->nbface != fa2; pfli = pfli->next);
+      COEFF_FL(pfli,Z) += p;
+      for (pfli = fa2->tfstart; pfli->nbface != fa0; pfli = pfli->next);
+      COEFF_FL(pfli,Z) += p;
+   }
+}
+
 /* stiff.matrix corresponding to \int_K (-nu \Delta u_j)(v\cdot\nabla v_i)\dx */
 void lapl_stab_ij_sn_sf(i,j,k,n0,n1,n2,fa0,fa1,fa2,Z,s,c,vn,vf,b,ndetB)
 NODE *n0, *n1, *n2; 
@@ -1709,6 +2020,41 @@ FLOAT *s, *c, vn[SIDES][SIDES], vf[SIDES][SIDES], b[DIM2][DIM2], ndetB;
             INT_QUADR_L0(vn[k][j],vf[k][j],s[j],c[j]))*ndetB;
       COEFF_FF(fa0,Z) += p0*p;
       putppij(fa0->tfstart,fa1,fa2,p1*p,p2*p,Z);
+}
+
+/* stiff.matrix corresponding to \int_K (-nu \Delta u_j)(v\cdot\nabla v_i)\dx */
+void lapl_stab_ij_p1nc_sn_sf(i,j,k,n0,n1,n2,fa0,fa1,fa2,Z,s,c,vn,vf,b,ndetB,
+                                                       delta_0,delta_1, delta_2)
+NODE *n0, *n1, *n2; 
+FACE *fa0, *fa1, *fa2;
+INT i, j, k, Z;
+FLOAT *s, *c, vn[SIDES][SIDES], vf[SIDES][SIDES], b[DIM2][DIM2], ndetB,
+                                                      delta_0, delta_1, delta_2;
+{
+   NFLINK *pnf;
+   FLOAT p, p0, p1, p2;
+  
+   p0 = 2.*DOT(b[j],b[k]);
+   p1 = 2.*DOT(b[i],b[k]);
+   p2 = 2.*DOT(b[i],b[j]);
+   p = -(INT_QUADR_L0(vn[i][i],vf[i][i],s[i],c[i])*delta_0 +
+         INT_QUADR_L0(vn[j][i],vf[j][i],s[i],c[i])*delta_1 +
+         INT_QUADR_L0(vn[k][i],vf[k][i],s[i],c[i])*delta_2
+        )*ndetB;
+   putasij(n0->tnfstart,fa1,fa2,p1*p,p2*p,Z);
+   for (pnf=n0->tnfstart; pnf->nbface!=fa0; pnf=pnf->next);
+   COEFFL(pnf,Z) += p0*p;
+
+   p = -(INT_QUADR_L0_L1(vn[k][k],vf[k][k],s[k],c[k])*delta_0 +
+         INT_QUADR_L0_L0(vn[j][k],vf[j][k],s[k],c[k])*delta_1 +
+         INT_QUADR_L0_L1(vn[i][k],vf[i][k],s[k],c[k])*delta_2 +
+
+         INT_QUADR_L0_L1(vn[j][j],vf[j][j],s[j],c[j])*delta_0 +
+         INT_QUADR_L0_L1(vn[i][j],vf[i][j],s[j],c[j])*delta_1 +
+         INT_QUADR_L0_L0(vn[k][j],vf[k][j],s[j],c[j])*delta_2
+        )*ndetB;
+   COEFF_FF(fa0,Z) += p0*p;
+   putppij(fa0->tfstart,fa1,fa2,p1*p,p2*p,Z);
 }
 
 /* stiff.matrix corresponding to \int_K u_j(v\cdot\nabla v_i)\dx */
@@ -1824,6 +2170,222 @@ FLOAT *s, *c, vn[SIDES][SIDES], vf[SIDES][SIDES], sr, cr, rn[SIDES], rf[SIDES],
                            vf[i][k],vf[j][k],vf[k][k],sr,cr,s[k],c[k]))*ndetB;
 }
 
+/* stiff.matrix corresponding to \int_K r u_j(v\cdot\nabla v_i)\dx */
+void react_stab_ij_p1nc_sn_sf(i,j,k,n0,n1,n2,fa0,fa1,fa2,Z,
+                            s,c,vn,vf,sr,cr,rn,rf,ndetB,delta_0,delta_1,delta_2)
+NODE *n0, *n1, *n2; 
+FACE *fa0, *fa1, *fa2;
+INT i, j, k, Z;
+FLOAT *s, *c, vn[SIDES][SIDES], vf[SIDES][SIDES], sr, cr, rn[SIDES], rf[SIDES], 
+                                               ndetB, delta_0, delta_1, delta_2;
+{
+   NFLINK *pnf;
+   FNLINK *pfn;
+  
+      COEFFN(n0,Z) += 
+            (CONV_INT_L0_L0(rn[i],rn[j],rn[k],rf[i],rf[j],rf[k],
+                            vn[i][i],vn[j][i],vn[k][i],vf[i][i],vf[j][i],vf[k][i],
+                            sr,cr,s[i],c[i])*delta_0 +
+             CONV_INT_L1_L2(rn[k],rn[i],rn[j],rf[k],rf[i],rf[j],
+                            vn[k][i],vn[i][i],vn[j][i],vf[k][i],vf[i][i],vf[j][i],
+                            sr,cr,s[i],c[i])*delta_1 +
+             CONV_INT_L1_L2(rn[j],rn[k],rn[i],rf[j],rf[k],rf[i],
+                            vn[j][i],vn[k][i],vn[i][i],vf[j][i],vf[k][i],vf[i][i],
+                            sr,cr,s[i],c[i])*delta_2
+            )*ndetB;
+
+      putaij(n0->tstart,n1,n2,
+            (CONV_INT_L1_L2(rn[k],rn[i],rn[j],rf[k],rf[i],rf[j],
+                            vn[k][i],vn[i][i],vn[j][i],vf[k][i],vf[i][i],vf[j][i],
+                            sr,cr,s[i],c[i])*delta_0 +
+             CONV_INT_L0_L0(rn[j],rn[k],rn[i],rf[j],rf[k],rf[i],
+                            vn[j][i],vn[k][i],vn[i][i],vf[j][i],vf[k][i],vf[i][i],
+                            sr,cr,s[i],c[i])*delta_1 +
+             CONV_INT_L1_L2(rn[i],rn[j],rn[k],rf[i],rf[j],rf[k],
+                            vn[i][i],vn[j][i],vn[k][i],vf[i][i],vf[j][i],vf[k][i],
+                            sr,cr,s[i],c[i])*delta_2
+            )*ndetB,
+
+            (CONV_INT_L1_L2(rn[j],rn[k],rn[i],rf[j],rf[k],rf[i],
+                            vn[j][i],vn[k][i],vn[i][i],vf[j][i],vf[k][i],vf[i][i],
+                            sr,cr,s[i],c[i])*delta_0 +
+             CONV_INT_L1_L2(rn[i],rn[j],rn[k],rf[i],rf[j],rf[k],
+                            vn[i][i],vn[j][i],vn[k][i],vf[i][i],vf[j][i],vf[k][i],
+                            sr,cr,s[i],c[i])*delta_1 +
+             CONV_INT_L0_L0(rn[k],rn[i],rn[j],rf[k],rf[i],rf[j],
+                            vn[k][i],vn[i][i],vn[j][i],vf[k][i],vf[i][i],vf[j][i],
+                            sr,cr,s[i],c[i])*delta_2
+            )*ndetB,Z);
+
+      putasij(n0->tnfstart,fa1,fa2,
+            (CONV_INT_L0_L0_L1(rn[i],rn[k],rn[j],rf[i],rf[k],rf[j],
+                               vn[i][i],vn[k][i],vn[j][i],vf[i][i],vf[k][i],vf[j][i],
+                               sr,cr,s[i],c[i])*delta_0 +
+             CONV_INT_L0_L1_L2(rn[i],rn[j],rn[k],rf[i],rf[j],rf[k],
+                               vn[i][i],vn[j][i],vn[k][i],vf[i][i],vf[j][i],vf[k][i],
+                               sr,cr,s[i],c[i])*delta_1 +
+             CONV_INT_L0_L0_L1(rn[k],rn[i],rn[j],rf[k],rf[i],rf[j],
+                               vn[k][i],vn[i][i],vn[j][i],vf[k][i],vf[i][i],vf[j][i],
+                               sr,cr,s[i],c[i])*delta_2
+            )*ndetB,
+
+            (CONV_INT_L0_L0_L1(rn[i],rn[j],rn[k],rf[i],rf[j],rf[k],
+                               vn[i][i],vn[j][i],vn[k][i],vf[i][i],vf[j][i],vf[k][i],
+                               sr,cr,s[i],c[i])*delta_0 +
+             CONV_INT_L0_L0_L1(rn[j],rn[i],rn[k],rf[j],rf[i],rf[k],
+                               vn[j][i],vn[i][i],vn[k][i],vf[j][i],vf[i][i],vf[k][i],
+                               sr,cr,s[i],c[i])*delta_1 +
+             CONV_INT_L0_L1_L2(rn[i],rn[j],rn[k],rf[i],rf[j],rf[k],
+                               vn[i][i],vn[j][i],vn[k][i],vf[i][i],vf[j][i],vf[k][i],
+                               sr,cr,s[i],c[i])*delta_2
+            )*ndetB,Z);
+
+      for (pnf=n0->tnfstart; pnf->nbface!=fa0; pnf=pnf->next);
+
+
+
+      COEFFL(pnf,Z) += (CONV_INT_L0_L1_L2(rn[i],rn[j],rn[k],rf[i],rf[j],rf[k],
+                               vn[i][i],vn[j][i],vn[k][i], vf[i][i],vf[j][i],vf[k][i],
+                               sr,cr,s[i],c[i])*delta_0 +
+                        CONV_INT_L0_L0_L1(rn[j],rn[k],rn[i],rf[j],rf[k],rf[i],
+                               vn[j][i],vn[k][i],vn[i][i], vf[j][i],vf[k][i],vf[i][i],
+                               sr,cr,s[i],c[i])*delta_1 +
+                        CONV_INT_L0_L0_L1(rn[k],rn[j],rn[i],rf[k],rf[j],rf[i],
+                               vn[k][i],vn[j][i],vn[i][i], vf[k][i],vf[j][i],vf[i][i],
+                               sr,cr,s[i],c[i])*delta_2
+                       )*ndetB;
+
+      COEFF_FF(fa0,Z) += (CONV_INT_L0_L0_L1_L2(rn[k],rn[j],rn[i],rf[k],rf[j],rf[i],
+                               vn[k][j],vn[j][j],vn[i][j],vf[k][j],vf[j][j],vf[i][j],
+                               sr,cr,s[j],c[j])*delta_0 +
+                          CONV_INT_L0_L0_L1_L1(rn[k],rn[j],rn[i],rf[k],rf[j],rf[i],
+                               vn[k][j],vn[j][j],vn[i][j],vf[k][j],vf[j][j],vf[i][j],
+                               sr,cr,s[j],c[j])*delta_1 +
+                          CONV_INT_L0_L0_L0_L1(rn[k],rn[j],rn[i],rf[k],rf[j],rf[i],
+                               vn[k][j],vn[j][j],vn[i][j],vf[k][j],vf[j][j],vf[i][j],
+                               sr,cr,s[j],c[j])*delta_2 +
+
+                          CONV_INT_L0_L0_L1_L2(rn[j],rn[k],rn[i],rf[j],rf[k],rf[i],
+                               vn[j][k],vn[k][k],vn[i][k],vf[j][k],vf[k][k],vf[i][k],
+                               sr,cr,s[k],c[k])*delta_0 +
+                          CONV_INT_L0_L0_L0_L1(rn[j],rn[k],rn[i],rf[j],rf[k],rf[i],
+                               vn[j][k],vn[k][k],vn[i][k],vf[j][k],vf[k][k],vf[i][k],
+                               sr,cr,s[k],c[k])*delta_1 +
+                          CONV_INT_L0_L0_L1_L1(rn[j],rn[k],rn[i],rf[j],rf[k],rf[i],
+                               vn[j][k],vn[k][k],vn[i][k],vf[j][k],vf[k][k],vf[i][k],
+                               sr,cr,s[k],c[k])*delta_2
+                         )*ndetB;
+
+      putppij(fa0->tfstart,fa1,fa2,
+                    (CONV_INT_L0_L0_L1_L1(rn[k],rn[i],rn[j],rf[k],rf[i],rf[j],
+                          vn[k][j],vn[i][j],vn[j][j],vf[k][j],vf[i][j],vf[j][j],
+                          sr,cr,s[j],c[j])*delta_0 +
+                     CONV_INT_L0_L0_L1_L2(rn[k],rn[i],rn[j],rf[k],rf[i],rf[j],
+                          vn[k][j],vn[i][j],vn[j][j],vf[k][j],vf[i][j],vf[j][j],
+                          sr,cr,s[j],c[j])*delta_1 +
+                     CONV_INT_L0_L0_L0_L1(rn[k],rn[i],rn[j],rf[k],rf[i],rf[j],
+                          vn[k][j],vn[i][j],vn[j][j],vf[k][j],vf[i][j],vf[j][j],
+                          sr,cr,s[j],c[j])*delta_2 +
+
+                     CONV_INT_L0_L0_L1_L2(rn[i],rn[j],rn[k],rf[i],rf[j],rf[k],
+                          vn[i][k],vn[j][k],vn[k][k],vf[i][k],vf[j][k],vf[k][k],
+                          sr,cr,s[k],c[k])*delta_0 +
+                     CONV_INT_L0_L0_L1_L2(rn[j],rn[k],rn[i],rf[j],rf[k],rf[i],
+                          vn[j][k],vn[k][k],vn[i][k],vf[j][k],vf[k][k],vf[i][k],
+                          sr,cr,s[k],c[k])*delta_1 +
+                     CONV_INT_L0_L0_L1_L2(rn[k],rn[i],rn[j],rf[k],rf[i],rf[j],
+                          vn[k][k],vn[i][k],vn[j][k],vf[k][k],vf[i][k],vf[j][k],
+                          sr,cr,s[k],c[k])*delta_2
+                    )*ndetB,
+                    
+                    (CONV_INT_L0_L0_L1_L2(rn[i],rn[j],rn[k],rf[i],rf[j],rf[k],
+                          vn[i][j],vn[j][j],vn[k][j],vf[i][j],vf[j][j],vf[k][j],
+                          sr,cr,s[j],c[j])*delta_0 +
+                     CONV_INT_L0_L0_L1_L2(rn[j],rn[k],rn[i],rf[j],rf[k],rf[i],
+                          vn[j][j],vn[k][j],vn[i][j],vf[j][j],vf[k][j],vf[i][j],
+                          sr,cr,s[j],c[j])*delta_1 +
+                     CONV_INT_L0_L0_L1_L2(rn[k],rn[i],rn[j],rf[k],rf[i],rf[j],
+                          vn[k][j],vn[i][j],vn[j][j],vf[k][j],vf[i][j],vf[j][j],
+                          sr,cr,s[j],c[j])*delta_2 +
+
+                     CONV_INT_L0_L0_L1_L1(rn[j],rn[i],rn[k],rf[j],rf[i],rf[k],
+                          vn[j][k],vn[i][k],vn[k][k],vf[j][k],vf[i][k],vf[k][k],
+                          sr,cr,s[k],c[k])*delta_0 +
+                     CONV_INT_L0_L0_L0_L1(rn[j],rn[i],rn[k],rf[j],rf[i],rf[k],
+                          vn[j][k],vn[i][k],vn[k][k],vf[j][k],vf[i][k],vf[k][k],
+                          sr,cr,s[k],c[k])*delta_1 +
+                     CONV_INT_L0_L0_L1_L2(rn[j],rn[i],rn[k],rf[j],rf[i],rf[k],
+                          vn[j][k],vn[i][k],vn[k][k],vf[j][k],vf[i][k],vf[k][k],
+                          sr,cr,s[k],c[k])*delta_2
+                    )*ndetB,Z);
+
+      for (pfn=fa0->tfnstart; pfn->nbnode!=n0; pfn=pfn->next);
+      COEFFL(pfn,Z) += (CONV_INT_L0_L0_L1(rn[i],rn[k],rn[j],rf[i],rf[k],rf[j],
+                          vn[i][j],vn[k][j],vn[j][j],vf[i][j],vf[k][j],vf[j][j],
+                          sr,cr,s[j],c[j])*delta_0 +
+                        CONV_INT_L0_L1_L2(rn[i],rn[j],rn[k],rf[i],rf[j],rf[k],
+                          vn[i][j],vn[j][j],vn[k][j],vf[i][j],vf[j][j],vf[k][j],
+                          sr,cr,s[j],c[j])*delta_1 +
+                        CONV_INT_L0_L0_L1(rn[k],rn[i],rn[j],rf[k],rf[i],rf[j],
+                          vn[k][j],vn[i][j],vn[j][j],vf[k][j],vf[i][j],vf[j][j],
+                          sr,cr,s[j],c[j])*delta_2 +
+
+                        CONV_INT_L0_L0_L1(rn[i],rn[j],rn[k],rf[i],rf[j],rf[k],
+                          vn[i][k],vn[j][k],vn[k][k],vf[i][k],vf[j][k],vf[k][k],
+                          sr,cr,s[k],c[k])*delta_0 +
+                        CONV_INT_L0_L0_L1(rn[j],rn[i],rn[k],rf[j],rf[i],rf[k],
+                          vn[j][k],vn[i][k],vn[k][k],vf[j][k],vf[i][k],vf[k][k],
+                          sr,cr,s[k],c[k])*delta_1 +
+                        CONV_INT_L0_L1_L2(rn[i],rn[j],rn[k],rf[i],rf[j],rf[k],
+                          vn[i][k],vn[j][k],vn[k][k],vf[i][k],vf[j][k],vf[k][k],
+                          sr,cr,s[k],c[k])*delta_2
+                       )*ndetB;
+
+      for (pfn=fa0->tfnstart; pfn->nbnode!=n1; pfn=pfn->next);
+      COEFFL(pfn,Z) += (CONV_INT_L0_L1_L2(rn[i],rn[j],rn[k],rf[i],rf[j],rf[k],
+                          vn[i][j],vn[j][j],vn[k][j],vf[i][j],vf[j][j],vf[k][j],
+                          sr,cr,s[j],c[j])*delta_0 +
+                        CONV_INT_L0_L0_L1(rn[j],rn[k],rn[i],rf[j],rf[k],rf[i],
+                          vn[j][j],vn[k][j],vn[i][j],vf[j][j],vf[k][j],vf[i][j],
+                          sr,cr,s[j],c[j])*delta_1 +
+                        CONV_INT_L0_L0_L1(rn[k],rn[j],rn[i],rf[k],rf[j],rf[i],
+                          vn[k][j],vn[j][j],vn[i][j],vf[k][j],vf[j][j],vf[i][j],
+                          sr,cr,s[j],c[j])*delta_2 +
+
+                        CONV_INT_L0_L0_L1(rn[j],rn[i],rn[k],rf[j],rf[i],rf[k],
+                          vn[j][k],vn[i][k],vn[k][k],vf[j][k],vf[i][k],vf[k][k],
+                          sr,cr,s[k],c[k])*delta_0 +
+                        CONV_INT_L0_L0_L0(rn[j],rn[k],rn[i],rf[j],rf[k],rf[i],
+                          vn[j][k],vn[k][k],vn[i][k],vf[j][k],vf[k][k],vf[i][k],
+                          sr,cr,s[k],c[k])*delta_1 +
+                        CONV_INT_L0_L0_L1(rn[j],rn[k],rn[i],rf[j],rf[k],rf[i],
+                          vn[j][k],vn[k][k],vn[i][k],vf[j][k],vf[k][k],vf[i][k],
+                          sr,cr,s[k],c[k])*delta_2
+                       )*ndetB;
+
+      for (pfn=fa0->tfnstart; pfn->nbnode!=n2; pfn=pfn->next);
+      COEFFL(pfn,Z) += (CONV_INT_L0_L0_L1(rn[k],rn[i],rn[j],rf[k],rf[i],rf[j],
+                          vn[k][j],vn[i][j],vn[j][j],vf[k][j],vf[i][j],vf[j][j],
+                          sr,cr,s[j],c[j])*delta_0 +
+                        CONV_INT_L0_L0_L1(rn[k],rn[j],rn[i],rf[k],rf[j],rf[i],
+                          vn[k][j],vn[j][j],vn[i][j],vf[k][j],vf[j][j],vf[i][j],
+                          sr,cr,s[j],c[j])*delta_1 +
+                        CONV_INT_L0_L0_L0(rn[k],rn[i],rn[j],rf[k],rf[i],rf[j],
+                          vn[k][j],vn[i][j],vn[j][j],vf[k][j],vf[i][j],vf[j][j],
+                          sr,cr,s[j],c[j])*delta_2 +
+
+                        CONV_INT_L0_L1_L2(rn[i],rn[j],rn[k],rf[i],rf[j],rf[k],
+                          vn[i][k],vn[j][k],vn[k][k],vf[i][k],vf[j][k],vf[k][k],
+                          sr,cr,s[k],c[k])*delta_0 +
+                        CONV_INT_L0_L0_L1(rn[j],rn[k],rn[i],rf[j],rf[k],rf[i],
+                          vn[j][k],vn[k][k],vn[i][k],vf[j][k],vf[k][k],vf[i][k],
+                          sr,cr,s[k],c[k])*delta_1 +
+                        CONV_INT_L0_L0_L1(rn[k],rn[j],rn[i],rf[k],rf[j],rf[i],
+                          vn[k][k],vn[j][k],vn[i][k],vf[k][k],vf[j][k],vf[i][k],
+                          sr,cr,s[k],c[k])*delta_2
+                       )*ndetB;
+}
+
 #else  /*  if !((N_DATA & ONE_NODE_MATR) && (N_DATA & ONE_NODE_FACE_MATR) && 
                 (F_DATA & ONE_FACE_MATR) && (F_DATA & ONE_FACE_NODE_MATR) && 
                 (DATA_S & N_LINK_TO_NODES) && (DATA_S & N_LINK_TO_FACES) && 
@@ -1833,9 +2395,17 @@ void conv_stab_ij_sn_sf(i,j,k,n0,n1,n2,fa0,fa1,fa2,Z,s,c,vn,vf,ndetB)
 NODE *n0, *n1, *n2; FACE *fa0, *fa1, *fa2; INT i, j, k, Z; FLOAT *s, *c, vn[SIDES][SIDES], vf[SIDES][SIDES], ndetB;
 {  eprintf("Error: conv_stab_ij_sn_sf not available.\n");  }
 
+void conv_stab_ij_p1nc_sn_sf(i,j,k,n0,n1,n2,fa0,fa1,fa2,Z,s,c,vn,vf,ndetB,delta_0,delta_1,delta_2)
+NODE *n0, *n1, *n2; FACE *fa0, *fa1, *fa2; INT i, j, k, Z; FLOAT *s, *c, vn[SIDES][SIDES], vf[SIDES][SIDES], ndetB, delta_0, delta_1, delta_2;
+{  eprintf("Error: conv_stab_ij_p1nc_sn_sf not available.\n");  }
+
 void lapl_stab_ij_sn_sf(i,j,k,n0,n1,n2,fa0,fa1,fa2,Z,s,c,vn,vf,b,ndetB)
 NODE *n0, *n1, *n2; FACE *fa0, *fa1, *fa2; INT i, j, k, Z; FLOAT *s, *c, vn[SIDES][SIDES], vf[SIDES][SIDES], b[DIM2][DIM2], ndetB;
 {  eprintf("Error: lapl_stab_ij_sn_sf not available.\n");  }
+
+void lapl_stab_ij_p1nc_sn_sf(i,j,k,n0,n1,n2,fa0,fa1,fa2,Z,s,c,vn,vf,b,ndetB,delta_0,delta_1,delta_2)
+NODE *n0, *n1, *n2; FACE *fa0, *fa1, *fa2; INT i, j, k, Z; FLOAT *s, *c, vn[SIDES][SIDES], vf[SIDES][SIDES], b[DIM2][DIM2], ndetB, delta_0, delta_1, delta_2;
+{  eprintf("Error: lapl_stab_ij_p1nc_sn_sf not available.\n");  }
 
 void time_stab_ij_sn_sf(i,j,k,n0,n1,n2,fa0,fa1,fa2,Z,s,c,vn,vf,ndetB)
 NODE *n0, *n1, *n2; FACE *fa0, *fa1, *fa2; INT i, j, k, Z; FLOAT *s, *c, vn[SIDES][SIDES], vf[SIDES][SIDES], ndetB;
@@ -1843,7 +2413,11 @@ NODE *n0, *n1, *n2; FACE *fa0, *fa1, *fa2; INT i, j, k, Z; FLOAT *s, *c, vn[SIDE
 
 void react_stab_ij_sn_sf(i,j,k,n0,n1,n2,fa0,fa1,fa2,Z,s,c,vn,vf,sr,cr,rn,rf,ndetB)
 NODE *n0, *n1, *n2; FACE *fa0, *fa1, *fa2; INT i, j, k, Z; FLOAT *s, *c, vn[SIDES][SIDES], vf[SIDES][SIDES], sr, cr, rn[SIDES], rf[SIDES], ndetB;
-{  eprintf("Error: time_stab_ij_sn_sf not available.\n");  }
+{  eprintf("Error: react_stab_ij_sn_sf not available.\n");  }
+
+void react_stab_ij_p1nc_sn_sf(i,j,k,n0,n1,n2,fa0,fa1,fa2,Z,s,c,vn,vf,sr,cr,rn,rf,ndetB,delta_0,delta_1,delta_2)
+NODE *n0, *n1, *n2; FACE *fa0, *fa1, *fa2; INT i, j, k, Z; FLOAT *s, *c, vn[SIDES][SIDES], vf[SIDES][SIDES], sr, cr, rn[SIDES], rf[SIDES], ndetB, delta_0, delta_1, delta_2;
+{  eprintf("Error: react_stab_ij_p1nc_sn_sf not available.\n");  }
 
 #endif
 
@@ -4712,13 +5286,19 @@ FLOAT bar[DIM2][DIM2], eps, bb0y, bb1y;
 #endif
 
 FLOAT sd_delta(pelem,eps,bb0,bb1)
-ELEMENT *pelem; 
+ELEMENT *pelem;
 FLOAT eps, (*bb0)(), (*bb1)();
 {
    FLOAT xc[DIM], b[DIM2][DIM2], b_norm, hT;
 
-   if (DELTA_TYPE == OUTFLOW_D)
-      RETURN_TAU_ON(pelem)
+   if (DELTA_TYPE == OUTFLOW_D){
+      #if (E_DATA & SCALAR_ELEMENT_DATA)
+      return(ED(pelem,TAU_VARIABLE));
+      #else
+      eprintf("Error: sd_delta not available.\n");
+      return(0.);
+      #endif
+   }
    else if (DELTA_TYPE == CLASSIC_D){
       coord_of_barycentre(pelem,xc);
       barycentric_coordinates(pelem->n[0]->myvertex->x,
@@ -4741,6 +5321,84 @@ FLOAT eps, (*bb0)(), (*bb1)();
       return(0.);
    }
 }
+
+FLOAT sd_p1c_delta(pelem,eps,bb0,bb1,tau_index,node)
+ELEMENT *pelem; 
+INT tau_index;
+NODE *node;
+FLOAT eps, (*bb0)(), (*bb1)();
+{
+   FLOAT xc[DIM], b[DIM2][DIM2], b_norm, hT;
+
+   if (DELTA_TYPE == OUTFLOW_D){
+      #if (N_DATA & SCALAR_NODE_DATA) && (TAU_SPACE == P1C)
+      return(NDS(node,tau_index));
+      #else
+      eprintf("Error: sd_p1c_delta not available.\n");
+      return(0.);
+      #endif
+   }
+   else if (DELTA_TYPE == CLASSIC_D){
+      coord_of_barycentre(pelem,xc);
+      barycentric_coordinates(pelem->n[0]->myvertex->x,
+                              pelem->n[1]->myvertex->x,
+                              pelem->n[2]->myvertex->x,b); 
+      return(sd_tau_classic(pelem,b,eps,bb0(xc),bb1(xc),U_SPACE));
+   }
+   else if (DELTA_TYPE == BASIC_D1 || DELTA_TYPE == BASIC_D2){
+      b_norm = vnorm_on_element(pelem,bb0,bb1);
+      hT = diameter(pelem);
+      if (hT*b_norm < eps)
+         return(0.);
+      else if (DELTA_TYPE == BASIC_D1)
+         return(hT*DELTA_FACTOR);
+      else if (DELTA_TYPE == BASIC_D2)
+         return(hT*DELTA_FACTOR/b_norm);
+   }
+   else{
+      eprintf("Error: sd_p1c_delta not available.\n");
+      return(0.);
+   }
+}
+
+FLOAT sd_p1_nc_delta(pelem,eps,bb0,bb1,tau_index,node)
+ELEMENT *pelem; 
+INT tau_index, node;
+FLOAT eps, (*bb0)(), (*bb1)();
+{
+   FLOAT xc[DIM], b[DIM2][DIM2], b_norm, hT;
+
+   if (DELTA_TYPE == OUTFLOW_D){
+      #if (E_DATA & SCALAR_DATA_IN_ELEMENT_NODES) && (TAU_SPACE == P1_NC)
+      return(EDSN(pelem,tau_index,node));
+      #else
+      eprintf("Error: sd_p1_nc_delta not available.\n");
+      return(0.);
+      #endif
+   }
+   else if (DELTA_TYPE == CLASSIC_D){
+      coord_of_barycentre(pelem,xc);
+      barycentric_coordinates(pelem->n[0]->myvertex->x,
+                              pelem->n[1]->myvertex->x,
+                              pelem->n[2]->myvertex->x,b); 
+      return(sd_tau_classic(pelem,b,eps,bb0(xc),bb1(xc),U_SPACE));
+   }
+   else if (DELTA_TYPE == BASIC_D1 || DELTA_TYPE == BASIC_D2){
+      b_norm = vnorm_on_element(pelem,bb0,bb1);
+      hT = diameter(pelem);
+      if (hT*b_norm < eps)
+         return(0.);
+      else if (DELTA_TYPE == BASIC_D1)
+         return(hT*DELTA_FACTOR);
+      else if (DELTA_TYPE == BASIC_D2)
+         return(hT*DELTA_FACTOR/b_norm);
+   }
+   else{
+      eprintf("Error: sd_p1_nc_delta not available.\n");
+      return(0.);
+   }
+}
+
 
 #if (E_DATA & SCALAR_ELEMENT_DATA) && (PAR_TYPE == Q_SE)
 
@@ -4782,6 +5440,72 @@ INT v;
    }
 }
 
+#elif (E_DATA & SCALAR_ELEMENT_DATA) && (TAU_SPACE == P0)
+
+void set_tau(tGrid,eps,bb0,bb1,v)
+GRID *tGrid;
+FLOAT eps, (*bb0)(), (*bb1)();
+INT v;
+{
+   ELEMENT *pelem;
+   FLOAT xc[DIM], b[DIM2][DIM2], b_norm, hT;
+
+   for (pelem = FIRSTELEMENT(tGrid); pelem; pelem = pelem->succ){
+      coord_of_barycentre(pelem,xc);
+      barycentric_coordinates(pelem->n[0]->myvertex->x,
+                              pelem->n[1]->myvertex->x,
+                              pelem->n[2]->myvertex->x,b); 
+      ED(pelem,v) = sd_tau_classic(pelem,b,eps,bb0(xc),bb1(xc),U_SPACE);
+   }
+}
+
+#elif (E_DATA & SCALAR_DATA_IN_ELEMENT_NODES) && (TAU_SPACE == P1_NC)
+
+void set_tau(tGrid,eps,bb0,bb1,v)
+GRID *tGrid;
+FLOAT eps, (*bb0)(), (*bb1)();
+INT v;
+{
+   ELEMENT *pelem;
+   FLOAT xc[DIM], b[DIM2][DIM2], b_norm, hT;
+
+   for (pelem = FIRSTELEMENT(tGrid); pelem; pelem = pelem->succ){
+      coord_of_barycentre(pelem,xc);
+      barycentric_coordinates(pelem->n[0]->myvertex->x,
+                              pelem->n[1]->myvertex->x,
+                              pelem->n[2]->myvertex->x,b); 
+      EDSN(pelem,v,0) = sd_tau_classic(pelem,b,eps,bb0(xc),bb1(xc),U_SPACE);
+      EDSN(pelem,v,1) = sd_tau_classic(pelem,b,eps,bb0(xc),bb1(xc),U_SPACE);
+      EDSN(pelem,v,2) = sd_tau_classic(pelem,b,eps,bb0(xc),bb1(xc),U_SPACE);
+   }
+}
+
+#elif (N_DATA & SCALAR_NODE_DATA) && (TAU_SPACE == P1C)
+
+void set_tau(tGrid,eps,bb0,bb1,v)
+GRID *tGrid;
+FLOAT eps, (*bb0)(), (*bb1)();
+INT v;
+{
+   NODE *n0, *n1, *n2;
+   ELEMENT *pelem;
+   FLOAT xc[DIM], b[DIM2][DIM2], b_norm, hT;
+
+   for (n0 = FIRSTNODE(tGrid); n0; n0 = n0->succ){
+      NDS(n0,v) = 0.;
+   }
+   for (pelem = FIRSTELEMENT(tGrid); pelem; pelem = pelem->succ){
+      NODES_OF_ELEMENT(n0,n1,n2,pelem);
+      coord_of_barycentre(pelem,xc);
+      barycentric_coordinates(pelem->n[0]->myvertex->x,
+                              pelem->n[1]->myvertex->x,
+                              pelem->n[2]->myvertex->x,b); 
+      NDS(n0,v) = NDS(n0,v) + sd_tau_classic(pelem,b,eps,bb0(xc),bb1(xc),U_SPACE)/3.;
+      NDS(n1,v) = NDS(n1,v) + sd_tau_classic(pelem,b,eps,bb0(xc),bb1(xc),U_SPACE)/3.;
+      NDS(n2,v) = NDS(n2,v) + sd_tau_classic(pelem,b,eps,bb0(xc),bb1(xc),U_SPACE)/3.;
+   }
+}
+
 #else
 
 void set_tau(tGrid,eps,bb0,bb1,v)
@@ -4790,6 +5514,16 @@ GRID *tGrid; FLOAT eps, (*bb0)(), (*bb1)(); INT v;
 
 #endif
 
+
+
+
+
+
+
+// Na vymazani (vse az do pristi velke mezery),
+// zadne E_TAU ani E_TAU_SOLD by se nemeli pouzivat, misto toho
+// proste promenna v nejakem prostoru. Co kdybychom pak chteli vice ruznych stavu
+// si ulozit atp. ...
 #if (E_DATA & E_TAU) && (E_DATA & SCALAR_ELEMENT_DATA) && (PAR_TYPE == Q_SE)
 
 void copy_ed_to_tau(tGrid,v)
@@ -4837,6 +5571,16 @@ ELEMENT *pelem;
 {  eprintf("Error: sc_lin_par not available.\n"); return(0.);  }
 
 #endif
+
+
+
+
+
+
+
+
+
+
 
 void max_b_and_diam(pelem,bb0,bb1,b,hK)
 ELEMENT *pelem; 
@@ -5038,8 +5782,14 @@ INT u, space, sc_type;
 {
    FLOAT xc[DIM], b_norm, hT;
 
-   if (DELTA_TYPE == OUTFLOW_D)
-      RETURN_TAU_ON(pelem)
+   if (DELTA_TYPE == OUTFLOW_D){
+      #if (E_DATA & SCALAR_ELEMENT_DATA) && (TAU_SPACE == P0)
+      return(ED(pelem,TAU_VARIABLE));
+      #else
+      eprintf("Error: sd_delta not available.\n");
+      return(0.);
+      #endif
+   }
    else if (DELTA_TYPE == CLASSIC_D){
       if (PW_CONST_PAR == YES){
          coord_of_barycentre(pelem,xc);
@@ -5282,7 +6032,7 @@ void (*sd_q_ij)();
    }
 }
 
-void add_P2C_sd_term_matr(tGrid,Z,nu,bb0,bb1,react)
+void add_p2c_sd_term_matr(tGrid,Z,nu,bb0,bb1,react)
 GRID *tGrid;        /*  streamline-diffusion term; exact for pw. quadratic b, */
 INT Z;              /*  and pw. quadratic reaction term                       */
 FLOAT nu, (*bb0)(), (*bb1)(), (*react)();
@@ -5328,6 +6078,108 @@ FLOAT nu, (*bb0)(), (*bb1)(), (*react)();
          lapl_stab_ij_sn_sf(2,0,1,n2,n0,n1,fa2,fa0,fa1,Z,s,c,vn,vf,b,ndetB);
       }
    }
+   printf("SDFEM (p2c) on %i elements.\n",n);
+}
+
+void add_p2c_sd_p1_nc_term_matr(tGrid,Z,nu,bb0,bb1,react)
+GRID *tGrid;        /*  streamline-diffusion term; exact for pw. quadratic b, */
+INT Z;              /*  and pw. quadratic reaction term                       */
+FLOAT nu, (*bb0)(), (*bb1)(), (*react)();
+{
+   NODE *n0, *n1, *n2;
+   FACE *fa0, *fa1, *fa2;
+   ELEMENT *pelem;
+   FLOAT s[SIDES], c[SIDES], vn[SIDES][SIDES], vf[SIDES][SIDES], 
+         v0[DIM], v1[DIM], v2[DIM], v01[DIM], v02[DIM], v12[DIM], 
+         sr, cr, rn[SIDES], rf[SIDES], ndetB, b[DIM2][DIM2], delta[DIM2], ndetB2;
+   INT n=0;
+
+   for (pelem = FIRSTELEMENT(tGrid); pelem != NULL; pelem = pelem->succ){
+      delta[0] = sd_p1_nc_delta(pelem,nu,bb0,bb1,TAU_VARIABLE,0);
+      delta[1] = sd_p1_nc_delta(pelem,nu,bb0,bb1,TAU_VARIABLE,1);
+      delta[2] = sd_p1_nc_delta(pelem,nu,bb0,bb1,TAU_VARIABLE,2);
+      if ((delta[0] > 0.) || (delta[1] > 0.) || (delta[2] > 0.)){
+         n++;
+         NODES_OF_ELEMENT(n0,n1,n2,pelem);
+         FACES_OF_ELEMENT(fa0,fa1,fa2,pelem);
+         p2cv_dofs(pelem,v0,v1,v2,v01,v02,v12,bb0,bb1);
+         p2cs_dofs(pelem,&rn[0],&rn[1],&rn[2],&rf[2],&rf[1],&rf[0],react);
+         sr = rn[0] + rn[1] + rn[2];
+         cr = rf[0] + rf[1] + rf[2];
+         ndetB = barycentric_coordinates(n0->myvertex->x,n1->myvertex->x,
+                                               n2->myvertex->x,b);
+         compute_vn_vf_s_c(v0,v1,v2,v01,v02,v12,b,vn,vf,s,c);
+         conv_stab_ij_p1nc_sn_sf(0,1,2,n0,n1,n2,fa0,fa1,fa2,Z,s,c,vn,vf,ndetB,delta[0],delta[1],delta[2]);
+         conv_stab_ij_p1nc_sn_sf(1,2,0,n1,n2,n0,fa1,fa2,fa0,Z,s,c,vn,vf,ndetB,delta[1],delta[2],delta[0]);
+         conv_stab_ij_p1nc_sn_sf(2,0,1,n2,n0,n1,fa2,fa0,fa1,Z,s,c,vn,vf,ndetB,delta[2],delta[0],delta[1]);
+         
+         
+         //ndetB2 = delta[1]*barycentric_coordinates(n0->myvertex->x,n1->myvertex->x,
+         //                              n2->myvertex->x,b);
+         //conv_stab_ij_sn_sf(0,1,2,n0,n1,n2,fa0,fa1,fa2,Z,s,c,vn,vf,ndetB);
+         //conv_stab_ij_sn_sf(1,2,0,n1,n2,n0,fa1,fa2,fa0,Z,s,c,vn,vf,ndetB);
+         //conv_stab_ij_sn_sf(2,0,1,n2,n0,n1,fa2,fa0,fa1,Z,s,c,vn,vf,ndetB);
+         
+         
+         react_stab_ij_p1nc_sn_sf(0,1,2,n0,n1,n2,fa0,fa1,fa2,Z,s,c,vn,vf,
+                                                             sr,cr,rn,rf,ndetB,delta[0],delta[1],delta[2]);
+         react_stab_ij_p1nc_sn_sf(1,2,0,n1,n2,n0,fa1,fa2,fa0,Z,s,c,vn,vf,
+                                                             sr,cr,rn,rf,ndetB,delta[1],delta[2],delta[0]);
+         react_stab_ij_p1nc_sn_sf(2,0,1,n2,n0,n1,fa2,fa0,fa1,Z,s,c,vn,vf,
+                                                             sr,cr,rn,rf,ndetB,delta[2],delta[0],delta[1]);
+         ndetB *= nu;
+         lapl_stab_ij_p1nc_sn_sf(0,1,2,n0,n1,n2,fa0,fa1,fa2,Z,s,c,vn,vf,b,ndetB,delta[0],delta[1],delta[2]);
+         lapl_stab_ij_p1nc_sn_sf(1,2,0,n1,n2,n0,fa1,fa2,fa0,Z,s,c,vn,vf,b,ndetB,delta[1],delta[2],delta[0]);
+         lapl_stab_ij_p1nc_sn_sf(2,0,1,n2,n0,n1,fa2,fa0,fa1,Z,s,c,vn,vf,b,ndetB,delta[2],delta[0],delta[1]);
+      }
+   }
+   printf("SDFEM on %i elements.\n",n);
+}
+
+void add_p2c_sd_p1c_term_matr(tGrid,Z,nu,bb0,bb1,react)
+GRID *tGrid;        /*  streamline-diffusion term; exact for pw. quadratic b, */
+INT Z;              /*  and pw. quadratic reaction term                       */
+FLOAT nu, (*bb0)(), (*bb1)(), (*react)();
+{
+   NODE *n0, *n1, *n2;
+   FACE *fa0, *fa1, *fa2;
+   ELEMENT *pelem;
+   FLOAT s[SIDES], c[SIDES], vn[SIDES][SIDES], vf[SIDES][SIDES], 
+         v0[DIM], v1[DIM], v2[DIM], v01[DIM], v02[DIM], v12[DIM], 
+         sr, cr, rn[SIDES], rf[SIDES], ndetB, b[DIM2][DIM2], delta[DIM2];
+   INT n=0;
+
+   for (pelem = FIRSTELEMENT(tGrid); pelem != NULL; pelem = pelem->succ){
+      NODES_OF_ELEMENT(n0,n1,n2,pelem);
+      delta[0] = sd_p1c_delta(pelem,nu,bb0,bb1,TAU_VARIABLE,n0);
+      delta[1] = sd_p1c_delta(pelem,nu,bb0,bb1,TAU_VARIABLE,n1);
+      delta[2] = sd_p1c_delta(pelem,nu,bb0,bb1,TAU_VARIABLE,n2);
+      if ((delta[0] > 0.) || (delta[1] > 0.) || (delta[2] > 0.)){
+         n++;
+         NODES_OF_ELEMENT(n0,n1,n2,pelem);
+         FACES_OF_ELEMENT(fa0,fa1,fa2,pelem);
+         p2cv_dofs(pelem,v0,v1,v2,v01,v02,v12,bb0,bb1);
+         p2cs_dofs(pelem,&rn[0],&rn[1],&rn[2],&rf[2],&rf[1],&rf[0],react);
+         sr = rn[0] + rn[1] + rn[2];
+         cr = rf[0] + rf[1] + rf[2];
+         ndetB = barycentric_coordinates(n0->myvertex->x,n1->myvertex->x,
+                                               n2->myvertex->x,b);
+         compute_vn_vf_s_c(v0,v1,v2,v01,v02,v12,b,vn,vf,s,c);
+         conv_stab_ij_p1nc_sn_sf(0,1,2,n0,n1,n2,fa0,fa1,fa2,Z,s,c,vn,vf,ndetB,delta[0],delta[1],delta[2]);
+         conv_stab_ij_p1nc_sn_sf(1,2,0,n1,n2,n0,fa1,fa2,fa0,Z,s,c,vn,vf,ndetB,delta[1],delta[2],delta[0]);
+         conv_stab_ij_p1nc_sn_sf(2,0,1,n2,n0,n1,fa2,fa0,fa1,Z,s,c,vn,vf,ndetB,delta[2],delta[0],delta[1]);
+         react_stab_ij_p1nc_sn_sf(0,1,2,n0,n1,n2,fa0,fa1,fa2,Z,s,c,vn,vf,
+                                                             sr,cr,rn,rf,ndetB,delta[0],delta[1],delta[2]);
+         react_stab_ij_p1nc_sn_sf(1,2,0,n1,n2,n0,fa1,fa2,fa0,Z,s,c,vn,vf,
+                                                             sr,cr,rn,rf,ndetB,delta[1],delta[2],delta[0]);
+         react_stab_ij_p1nc_sn_sf(2,0,1,n2,n0,n1,fa2,fa0,fa1,Z,s,c,vn,vf,
+                                                             sr,cr,rn,rf,ndetB,delta[2],delta[0],delta[1]);
+         ndetB *= nu;
+         lapl_stab_ij_p1nc_sn_sf(0,1,2,n0,n1,n2,fa0,fa1,fa2,Z,s,c,vn,vf,b,ndetB,delta[0],delta[1],delta[2]);
+         lapl_stab_ij_p1nc_sn_sf(1,2,0,n1,n2,n0,fa1,fa2,fa0,Z,s,c,vn,vf,b,ndetB,delta[1],delta[2],delta[0]);
+         lapl_stab_ij_p1nc_sn_sf(2,0,1,n2,n0,n1,fa2,fa0,fa1,Z,s,c,vn,vf,b,ndetB,delta[2],delta[0],delta[1]);
+      }
+   }
    printf("SDFEM on %i elements.\n",n);
 }
 
@@ -5364,6 +6216,109 @@ FLOAT vn[SIDES][SIDES], vf[SIDES][SIDES],
                CONV_RHS_INT_L0(vn[1][0],vn[2][0],vn[0][0],
                                vf[1][0],vf[2][0],vf[0][0],f1,f2,f0,
                                f112,f110,f221,f220,f001,f002,f012))*rdetB; 
+}
+
+void add_sd_p1_nc_rhs_n_f(vn,vf,f0,f1,f2,f001,f002,f110,f112,f220,f221,f012,
+                          rdetB,delta_0,delta_1,delta_2,rhs_n0,rhs_n1,rhs_n2,
+                          rhs_f0,rhs_f1,rhs_f2)
+FLOAT vn[SIDES][SIDES], vf[SIDES][SIDES],
+      f0, f1, f2, f001, f002, f110, f112, f220, f221, f012, rdetB,
+      delta_0,delta_1,delta_2,
+      *rhs_n0, *rhs_n1, *rhs_n2, *rhs_f0, *rhs_f1, *rhs_f2;
+{
+   *rhs_n0 += (CONV_RHS_INT_L0(vn[0][0],vn[1][0],vn[2][0],
+                               vf[0][0],vf[1][0],vf[2][0],f0,f1,f2,
+                               f001,f002,f110,f112,f220,f221,f012)*delta_0 +
+               CONV_RHS_INT_L0(vn[1][0],vn[2][0],vn[0][0],
+                               vf[1][0],vf[2][0],vf[0][0],f1,f2,f0,
+                               f112,f110,f221,f220,f001,f002,f012)*delta_1 +
+               CONV_RHS_INT_L0(vn[2][0],vn[0][0],vn[1][0],
+                               vf[2][0],vf[0][0],vf[1][0],f2,f0,f1,
+                               f220,f221,f002,f001,f112,f110,f012)*delta_2
+              )*rdetB;
+   *rhs_n1 += (CONV_RHS_INT_L0(vn[0][1],vn[1][1],vn[2][1],
+                               vf[0][1],vf[1][1],vf[2][1],f0,f1,f2,
+                               f001,f002,f110,f112,f220,f221,f012)*delta_0 +
+               CONV_RHS_INT_L0(vn[1][1],vn[2][1],vn[0][1],
+                               vf[1][1],vf[2][1],vf[0][1],f1,f2,f0,
+                               f112,f110,f221,f220,f001,f002,f012)*delta_1 +
+               CONV_RHS_INT_L0(vn[2][1],vn[0][1],vn[1][1],
+                               vf[2][1],vf[0][1],vf[1][1],f2,f0,f1,
+                               f220,f221,f002,f001,f112,f110,f012)*delta_2
+              )*rdetB;
+   *rhs_n2 += (CONV_RHS_INT_L0(vn[0][2],vn[1][2],vn[2][2],
+                               vf[0][2],vf[1][2],vf[2][2],f0,f1,f2,
+                               f001,f002,f110,f112,f220,f221,f012)*delta_0 +
+               CONV_RHS_INT_L0(vn[1][2],vn[2][2],vn[0][2],
+                               vf[1][2],vf[2][2],vf[0][2],f1,f2,f0,
+                               f112,f110,f221,f220,f001,f002,f012)*delta_1 +
+               CONV_RHS_INT_L0(vn[2][2],vn[0][2],vn[1][2],
+                               vf[2][2],vf[0][2],vf[1][2],f2,f0,f1,
+                               f220,f221,f002,f001,f112,f110,f012)*delta_2
+              )*rdetB;
+
+   *rhs_f0 += (CONV_RHS_INT_L0_L1(vn[0][2],vn[1][2],vn[2][2],
+                                  vf[0][2],vf[1][2],vf[2][2],f0,f1,f2,
+                                  f001,f002,f110,f112,f220,f221,f012)*delta_0 +
+               CONV_RHS_INT_L0_L0(vn[1][2],vn[2][2],vn[0][2],
+                                  vf[1][2],vf[2][2],vf[0][2],f1,f2,f0,
+                                  f112,f110,f221,f220,f001,f002,f012)*delta_1 +
+               CONV_RHS_INT_L0_L1(vn[1][2],vn[2][2],vn[0][2],
+                                  vf[1][2],vf[2][2],vf[0][2],f1,f2,f0,
+                                  f112,f110,f221,f220,f001,f002,f012)*delta_2 +
+
+               CONV_RHS_INT_L0_L1(vn[2][1],vn[0][1],vn[1][1],
+                                  vf[2][1],vf[0][1],vf[1][1],f2,f0,f1,
+                                  f220,f221,f002,f001,f112,f110,f012)*delta_0 +
+               CONV_RHS_INT_L0_L1(vn[1][1],vn[2][1],vn[0][1],
+                                  vf[1][1],vf[2][1],vf[0][1],f1,f2,f0,
+                                  f112,f110,f221,f220,f001,f002,f012)*delta_1 +
+               CONV_RHS_INT_L0_L0(vn[2][1],vn[0][1],vn[1][1],
+                                  vf[2][1],vf[0][1],vf[1][1],f2,f0,f1,
+                                  f220,f221,f002,f001,f112,f110,f012)*delta_2
+              )*rdetB;
+
+   *rhs_f1 += (CONV_RHS_INT_L0_L0(vn[0][2],vn[1][2],vn[2][2],
+                                  vf[0][2],vf[1][2],vf[2][2],f0,f1,f2,
+                                  f001,f002,f110,f112,f220,f221,f012)*delta_0 +
+               CONV_RHS_INT_L0_L1(vn[0][2],vn[1][2],vn[2][2],
+                                  vf[0][2],vf[1][2],vf[2][2],f0,f1,f2,
+                                  f001,f002,f110,f112,f220,f221,f012)*delta_1 +
+               CONV_RHS_INT_L0_L1(vn[2][2],vn[0][2],vn[1][2],
+                                  vf[2][2],vf[0][2],vf[1][2],f2,f0,f1,
+                                  f220,f221,f002,f001,f112,f110,f012)*delta_2 +
+
+               CONV_RHS_INT_L0_L1(vn[2][0],vn[0][0],vn[1][0],
+                                  vf[2][0],vf[0][0],vf[1][0],f2,f0,f1,
+                                  f220,f221,f002,f001,f112,f110,f012)*delta_0 +
+               CONV_RHS_INT_L0_L1(vn[1][0],vn[2][0],vn[0][0],
+                                  vf[1][0],vf[2][0],vf[0][0],f1,f2,f0,
+                                  f112,f110,f221,f220,f001,f002,f012)*delta_1 +
+               CONV_RHS_INT_L0_L0(vn[2][0],vn[0][0],vn[1][0],
+                                  vf[2][0],vf[0][0],vf[1][0],f2,f0,f1,
+                                  f220,f221,f002,f001,f112,f110,f012)*delta_2
+              )*rdetB;
+
+   *rhs_f2 += (CONV_RHS_INT_L0_L0(vn[0][1],vn[1][1],vn[2][1],
+                                  vf[0][1],vf[1][1],vf[2][1],f0,f1,f2,
+                                  f001,f002,f110,f112,f220,f221,f012)*delta_0 +
+               CONV_RHS_INT_L0_L1(vn[0][1],vn[1][1],vn[2][1],
+                                  vf[0][1],vf[1][1],vf[2][1],f0,f1,f2,
+                                  f001,f002,f110,f112,f220,f221,f012)*delta_1 +
+               CONV_RHS_INT_L0_L1(vn[2][1],vn[0][1],vn[1][1],
+                                  vf[2][1],vf[0][1],vf[1][1],f2,f0,f1,
+                                  f220,f221,f002,f001,f112,f110,f012)*delta_2 +
+
+               CONV_RHS_INT_L0_L1(vn[0][0],vn[1][0],vn[2][0],
+                                  vf[0][0],vf[1][0],vf[2][0],f0,f1,f2,
+                                  f001,f002,f110,f112,f220,f221,f012)*delta_0 +
+               CONV_RHS_INT_L0_L0(vn[1][0],vn[2][0],vn[0][0],
+                                  vf[1][0],vf[2][0],vf[0][0],f1,f2,f0,
+                                  f112,f110,f221,f220,f001,f002,f012)*delta_1 +
+               CONV_RHS_INT_L0_L1(vn[1][0],vn[2][0],vn[0][0],
+                                  vf[1][0],vf[2][0],vf[0][0],f1,f2,f0,
+                                  f112,f110,f221,f220,f001,f002,f012)*delta_2
+              )*rdetB;
 }
 
 #if (N_DATA & VECTOR_NODE_DATA) && (F_DATA & VECTOR_FACE_DATA) && (F_DATA & CURVED_FACE_MIDDLE) && (ELEMENT_TYPE == SIMPLEX)
@@ -7041,6 +7996,81 @@ FLOAT bb_0[DIM], bb_1[DIM], bb_2[DIM], b0[DIM2], b1[DIM2], b2[DIM2],
       putaij(n0->tstart,n1,n2,an1,an2,Z);
 }
 
+void sdp1nc_p1c_ij(n0,n1,n2,Z,bb_0,bb_1,bb_2,r0,r1,r2,b0,b1,b2,detB,delta_0,delta_1,delta_2)
+NODE *n0, *n1, *n2;                                 /* detB = volume */
+INT Z;
+FLOAT bb_0[DIM], bb_1[DIM], bb_2[DIM], b0[DIM2], b1[DIM2], b2[DIM2], 
+      r0, r1, r2, detB, delta_0, delta_1, delta_2;
+{
+   FLOAT t0[DIM2], t1[DIM2], t2[DIM2], ann, an1, an2;
+  
+      t0[0] = DOT(b0,bb_0);
+      t0[1] = DOT(b0,bb_1);
+      t0[2] = DOT(b0,bb_2);
+      t1[0] = DOT(b1,bb_0);
+      t1[1] = DOT(b1,bb_1);
+      t1[2] = DOT(b1,bb_2);
+      t2[0] = DOT(b2,bb_0);
+      t2[1] = DOT(b2,bb_1);
+      t2[2] = DOT(b2,bb_2);
+      ann = (6.*(3.*delta_0+delta_1+delta_2)   *t0[0]*t0[0] +
+             6.*(2.*delta_0+2.*delta_1+delta_2)*t0[0]*t0[1] +
+             6.*(2.*delta_0+delta_1+2.*delta_2)*t0[0]*t0[2] +
+             6.*(delta_0+3.*delta_1+delta_2)   *t0[1]*t0[1] +
+             6.*(delta_0+2.*delta_1+2.*delta_2)*t0[1]*t0[2] +
+             6.*(delta_0+delta_1+3.*delta_2)   *t0[2]*t0[2] +
+             3.*(4.*delta_0+delta_1+delta_2)*r0*t0[0] +
+             (3.*delta_0+2.*delta_1+delta_2)*r0*t0[1] +
+             (3.*delta_0+delta_1+2.*delta_2)*r0*t0[2] +
+             (3.*delta_0+2.*delta_1+delta_2)*r1*t0[0] +
+             (2.*delta_0+3.*delta_1+delta_2)*r1*t0[1] +
+             (   delta_0+   delta_1+delta_2)*r1*t0[2] +
+             (3.*delta_0+delta_1+2.*delta_2)*r2*t0[0] +
+             (   delta_0+   delta_1+delta_2)*r2*t0[1] +
+             (2.*delta_0+delta_1+3.*delta_2)*r2*t0[2])
+             *detB/180.;
+      an1 = (6.*(3.*delta_0+delta_1+delta_2)   *t1[0]*t0[0] +
+             3.*(2.*delta_0+2.*delta_1+delta_2)*t1[0]*t0[1] +
+             3.*(2.*delta_0+delta_1+2.*delta_2)*t1[0]*t0[2] +
+             3.*(2.*delta_0+2.*delta_1+delta_2)*t1[1]*t0[0] +
+             6.*(delta_0+3.*delta_1+delta_2)   *t1[1]*t0[1] +
+             3.*(delta_0+2.*delta_1+2.*delta_2)*t1[1]*t0[2] +
+             3.*(2.*delta_0+delta_1+2.*delta_2)*t1[2]*t0[0] +
+             3.*(delta_0+2.*delta_1+2.*delta_2)*t1[2]*t0[1] +
+             6.*(delta_0+delta_1+3.*delta_2)   *t1[2]*t0[2] +
+             (3.*delta_0+2.*delta_1+delta_2)*r0*t0[0] +
+             (2.*delta_0+3.*delta_1+delta_2)*r0*t0[1] +
+             (   delta_0+   delta_1+delta_2)*r0*t0[2] +
+             (2.*delta_0+3.*delta_1+delta_2)*r1*t0[0] +
+             3.*(delta_0+4.*delta_1+delta_2)*r1*t0[1] +
+             (delta_0+3.*delta_1+2.*delta_2)*r1*t0[2] +
+             (   delta_0+   delta_1+delta_2)*r2*t0[0] +
+             (delta_0+3.*delta_1+2.*delta_2)*r2*t0[1] +
+             (delta_0+2.*delta_1+3.*delta_2)*r2*t0[2])
+             *detB/180.;
+      an2 = (6.*(3.*delta_0+delta_1+delta_2)   *t2[0]*t0[0] +
+             3.*(2.*delta_0+2.*delta_1+delta_2)*t2[0]*t0[1] +
+             3.*(2.*delta_0+delta_1+2.*delta_2)*t2[0]*t0[2] +
+             3.*(2.*delta_0+2.*delta_1+delta_2)*t2[1]*t0[0] +
+             6.*(delta_0+3.*delta_1+delta_2)   *t2[1]*t0[1] +
+             3.*(delta_0+2.*delta_1+2.*delta_2)*t2[1]*t0[2] +
+             3.*(2.*delta_0+delta_1+2.*delta_2)*t2[2]*t0[0] +
+             3.*(delta_0+2.*delta_1+2.*delta_2)*t2[2]*t0[1] +
+             6.*(delta_0+delta_1+3.*delta_2)   *t2[2]*t0[2] +
+             (3.*delta_0+delta_1+2.*delta_2)*r0*t0[0] +
+             (   delta_0+   delta_1+delta_2)*r0*t0[1] +
+             (2.*delta_0+delta_1+3.*delta_2)*r0*t0[2] +
+             (   delta_0+   delta_1+delta_2)*r1*t0[0] +
+             (delta_0+3.*delta_1+2.*delta_2)*r1*t0[1] +
+             (delta_0+2.*delta_1+3.*delta_2)*r1*t0[2] +
+             (2.*delta_0+delta_1+3.*delta_2)*r2*t0[0] +
+             (delta_0+2.*delta_1+3.*delta_2)*r2*t0[1] +
+             3.*(delta_0+delta_1+4.*delta_2)*r2*t0[2])
+             *detB/180.;
+      COEFFN(n0,Z) += ann;
+      putaij(n0->tstart,n1,n2,an1,an2,Z);
+}
+
 void sd_p1c_quadr_ij(pelem,i0,i1,i2,Z,bar,bb0,bb1,react,rhs,eps,
                      u,space,sc_type,par1,par2,sd_tau,n,x,w)
 ELEMENT *pelem;
@@ -7852,6 +8882,72 @@ FLOAT nu, (*bb0)(), (*bb1)(), (*react)();
    }
 // printf("SDFEM on %i elements.\n",n);
 }
+
+void add_p1c_sd_p1_nc_term_matr(tGrid,Z,nu,bb0,bb1,react)
+GRID *tGrid;             /*  streamline-diffusion term; exact for pw. lin. b, */
+INT Z;                   /*  and pw. linear reaction term                     */
+FLOAT nu, (*bb0)(), (*bb1)(), (*react)();
+{
+   NODE *n0, *n1, *n2;
+   ELEMENT *pelem;
+   FLOAT bb_0[DIM], bb_1[DIM], bb_2[DIM], r0, r1, r2, r, delta[DIM2], ndetB, 
+                                                                  b[DIM2][DIM2];
+   INT n=0;
+  
+   for (pelem = FIRSTELEMENT(tGrid);pelem != NULL;pelem = pelem->succ){
+      delta[0] = sd_p1_nc_delta(pelem,nu,bb0,bb1,TAU_VARIABLE,0);
+      delta[1] = sd_p1_nc_delta(pelem,nu,bb0,bb1,TAU_VARIABLE,1);
+      delta[2] = sd_p1_nc_delta(pelem,nu,bb0,bb1,TAU_VARIABLE,2);
+      if ((delta[0] > 0.)||(delta[1] > 0.)||(delta[2] > 0.)){
+         n++;
+         NODES_OF_ELEMENT(n0,n1,n2,pelem);
+         V_NODE_VALUES(n0,n1,n2,bb0,bb1,bb_0,bb_1,bb_2)
+         S_NODE_VALUES(n0,n1,n2,react,r0,r1,r2)
+         ndetB = barycentric_coordinates(n0->myvertex->x,n1->myvertex->x,
+                                               n2->myvertex->x,b);
+         sdp1nc_p1c_ij(n0,n1,n2,Z,bb_0,bb_1,bb_2,r0,r1,r2,b[0],b[1],b[2],ndetB,delta[0],delta[1],delta[2]);
+         sdp1nc_p1c_ij(n1,n2,n0,Z,bb_1,bb_2,bb_0,r1,r2,r0,b[1],b[2],b[0],ndetB,delta[1],delta[2],delta[0]);
+         sdp1nc_p1c_ij(n2,n0,n1,Z,bb_2,bb_0,bb_1,r2,r0,r1,b[2],b[0],b[1],ndetB,delta[2],delta[0],delta[1]);
+      }
+   }
+// printf("SDFEM on %i elements.\n",n);
+}
+
+void add_p1c_sd_p1c_term_matr(tGrid,Z,nu,bb0,bb1,react)
+GRID *tGrid;             /*  streamline-diffusion term; exact for pw. lin. b, */
+INT Z;                   /*  and pw. linear reaction term                     */
+FLOAT nu, (*bb0)(), (*bb1)(), (*react)();
+{
+   NODE *n0, *n1, *n2;
+   ELEMENT *pelem;
+   FLOAT bb_0[DIM], bb_1[DIM], bb_2[DIM], r0, r1, r2, r, delta[DIM2], ndetB, 
+                                                                  b[DIM2][DIM2];
+   INT n=0;
+  
+   for (pelem = FIRSTELEMENT(tGrid);pelem != NULL;pelem = pelem->succ){
+      NODES_OF_ELEMENT(n0,n1,n2,pelem);
+      delta[0] = sd_p1c_delta(pelem,nu,bb0,bb1,TAU_VARIABLE,n0);
+      delta[1] = sd_p1c_delta(pelem,nu,bb0,bb1,TAU_VARIABLE,n1);
+      delta[2] = sd_p1c_delta(pelem,nu,bb0,bb1,TAU_VARIABLE,n2);
+      if ((delta[0] > 0.)||(delta[1] > 0.)||(delta[2] > 0.)){
+         n++;
+         
+         V_NODE_VALUES(n0,n1,n2,bb0,bb1,bb_0,bb_1,bb_2)
+         S_NODE_VALUES(n0,n1,n2,react,r0,r1,r2)
+         ndetB = barycentric_coordinates(n0->myvertex->x,n1->myvertex->x,
+                                               n2->myvertex->x,b);
+         sdp1nc_p1c_ij(n0,n1,n2,Z,bb_0,bb_1,bb_2,r0,r1,r2,b[0],b[1],b[2],ndetB,delta[0],delta[1],delta[2]);
+         sdp1nc_p1c_ij(n1,n2,n0,Z,bb_1,bb_2,bb_0,r1,r2,r0,b[1],b[2],b[0],ndetB,delta[1],delta[2],delta[0]);
+         sdp1nc_p1c_ij(n2,n0,n1,Z,bb_2,bb_0,bb_1,r2,r0,r1,b[2],b[0],b[1],ndetB,delta[2],delta[0],delta[1]);
+      }
+   }
+// printf("SDFEM on %i elements.\n",n);
+}
+
+
+
+
+
 
 void p1c_Newton_matr_for_sc(tGrid,eps,Z,u,bb0,bb1,react,rhs,space,sc_type,par1)
 GRID *tGrid;
@@ -12748,7 +13844,17 @@ INT Z, space, mstruct, vstruct;
                                              SD_Q_RULE,sd_p1c_quadr_ij);
                     }
                     else
-                       add_p1c_sd_term_matr(tGrid,Z,nu,bb0,bb1,react);
+                       if (TAU_SPACE == P0){
+                          add_p1c_sd_term_matr(tGrid,Z,nu,bb0,bb1,react);
+                       }
+                       else if (TAU_SPACE == P1_NC){
+                          add_p1c_sd_p1_nc_term_matr(tGrid,Z,nu,bb0,bb1,react);
+                       }
+                       else if (TAU_SPACE == P1C){
+                          add_p1c_sd_p1c_term_matr(tGrid,Z,nu,bb0,bb1,react);
+                       }
+                       else
+                          eprintf("Error: add_sd_term_matr not available.\n");
                  }
                  else
                     eprintf("Error: add_sd_term_matr not available.\n");
@@ -12760,8 +13866,19 @@ INT Z, space, mstruct, vstruct;
                     eprintf("Error: add_sd_term_matr not available.\n");
         break;
    case P2C:     if (vstruct == SCALAR || 
-                                 (vstruct == VECTOR  && (mstruct & Q_NEBDIAG)) )
-                    add_P2C_sd_term_matr(tGrid,Z,nu,bb0,bb1,react);
+                                 (vstruct == VECTOR  && (mstruct & Q_NEBDIAG)) ){
+                    if (TAU_SPACE == P0){
+                       add_p2c_sd_term_matr(tGrid,Z,nu,bb0,bb1,react);
+                    }
+                    else if (TAU_SPACE == P1_NC){
+                       add_p2c_sd_p1_nc_term_matr(tGrid,Z,nu,bb0,bb1,react);
+                    }
+                    else if (TAU_SPACE == P1C){
+                       add_p2c_sd_p1c_term_matr(tGrid,Z,nu,bb0,bb1,react);
+                    }
+                    else
+                       eprintf("Error: add_sd_term_matr not available.\n");
+                 }
                  else
                     eprintf("Error: add_sd_term_matr not available.\n");
         break;
@@ -15397,6 +16514,140 @@ FLOAT nu, (*rhs)(), (*bb0)(), (*bb1)();
    }
 }
 
+void scalar_p1c_sdp1c_to_rhs_cubic(tGrid,f,nu,rhs,bb0,bb1)
+GRID *tGrid;
+INT f;
+FLOAT nu, (*rhs)(), (*bb0)(), (*bb1)();
+{
+   NODE *n0, *n1, *n2;
+   ELEMENT *pelem;
+   FLOAT bb_0[DIM], bb_1[DIM], bb_2[DIM], t0[DIM2], t1[DIM2], t2[DIM2], 
+         *x0, *x1, *x2, x001[DIM], x002[DIM], x110[DIM], x112[DIM], x220[DIM], 
+         x221[DIM], x012[DIM], 
+         f0, f1, f2, f001, f002, f110, f112, f220, f221, f012, 
+         s, z, delta[DIM2], ndetB, b[DIM2][DIM2];
+  
+   for (pelem = FIRSTELEMENT(tGrid);pelem != NULL;pelem = pelem->succ){
+      NODES_OF_ELEMENT(n0,n1,n2,pelem);
+      delta[0] = sd_p1c_delta(pelem,nu,bb0,bb1,TAU_VARIABLE,n0);
+      delta[1] = sd_p1c_delta(pelem,nu,bb0,bb1,TAU_VARIABLE,n1);
+      delta[2] = sd_p1c_delta(pelem,nu,bb0,bb1,TAU_VARIABLE,n2);
+      if ((delta[0] > 0.)||(delta[1] > 0.)||(delta[2] > 0.)){
+         VERTICES_OF_ELEMENT(x0,x1,x2,pelem);
+         V_NODE_VALUES(n0,n1,n2,bb0,bb1,bb_0,bb_1,bb_2)
+         points(x0,x1,x2,x001,x002,x110,x112,x220,x221,x012);
+         POINT_VALUES_10(x0,x1,x2,x001,x002,x110,x112,x220,x221,x012,
+                         f0,f1,f2,f001,f002,f110,f112,f220,f221,f012,rhs)
+         ndetB = barycentric_coordinates(x0,x1,x2,b);
+         t0[0] = DOT(b[0],bb_0);
+         t0[1] = DOT(b[0],bb_1);
+         t0[2] = DOT(b[0],bb_2);
+         t1[0] = DOT(b[1],bb_0);
+         t1[1] = DOT(b[1],bb_1);
+         t1[2] = DOT(b[1],bb_2);
+         t2[0] = DOT(b[2],bb_0);
+         t2[1] = DOT(b[2],bb_1);
+         t2[2] = DOT(b[2],bb_2);
+         s = delta[0]*f0 + delta[1]*f1 + delta[2]*f2; 
+         z = (delta[0]+delta[1]+delta[2])/3.*(f012+f012);
+         NDS(n0,f) += CONV_RHS_INT_L0_P1(t0[0],t0[1],t0[2],
+                                  f0*delta[0],f1*delta[1],f2*delta[2],
+                                  (2.*delta[0]+delta[1])/3.*f001,
+                                  (2.*delta[0]+delta[2])/3.*f002,
+                                  (2.*delta[1]+delta[0])/3.*f110,
+                                  (2.*delta[1]+delta[2])/3.*f112,
+                                  (2.*delta[2]+delta[0])/3.*f220,
+                                  (2.*delta[2]+delta[1])/3.*f221,
+                                  z/2.,s,z)*ndetB;
+         NDS(n1,f) += CONV_RHS_INT_L0_P1(t1[0],t1[1],t1[2],
+                                  f0*delta[0],f1*delta[1],f2*delta[2],
+                                  (2.*delta[0]+delta[1])/3.*f001,
+                                  (2.*delta[0]+delta[2])/3.*f002,
+                                  (2.*delta[1]+delta[0])/3.*f110,
+                                  (2.*delta[1]+delta[2])/3.*f112,
+                                  (2.*delta[2]+delta[0])/3.*f220,
+                                  (2.*delta[2]+delta[1])/3.*f221,
+                                  z/2.,s,z)*ndetB;
+          NDS(n2,f) += CONV_RHS_INT_L0_P1(t2[0],t2[1],t2[2],
+                                  f0*delta[0],f1*delta[1],f2*delta[2],
+                                  (2.*delta[0]+delta[1])/3.*f001,
+                                  (2.*delta[0]+delta[2])/3.*f002,
+                                  (2.*delta[1]+delta[0])/3.*f110,
+                                  (2.*delta[1]+delta[2])/3.*f112,
+                                  (2.*delta[2]+delta[0])/3.*f220,
+                                  (2.*delta[2]+delta[1])/3.*f221,
+                                  z/2.,s,z)*ndetB;
+      }
+   }
+}
+
+void scalar_p1c_sdp1nc_to_rhs_cubic(tGrid,f,nu,rhs,bb0,bb1)
+GRID *tGrid;
+INT f;
+FLOAT nu, (*rhs)(), (*bb0)(), (*bb1)();
+{
+   NODE *n0, *n1, *n2;
+   ELEMENT *pelem;
+   FLOAT bb_0[DIM], bb_1[DIM], bb_2[DIM], t0[DIM2], t1[DIM2], t2[DIM2], 
+         *x0, *x1, *x2, x001[DIM], x002[DIM], x110[DIM], x112[DIM], x220[DIM], 
+         x221[DIM], x012[DIM], 
+         f0, f1, f2, f001, f002, f110, f112, f220, f221, f012, 
+         s, z, delta[DIM2], ndetB, b[DIM2][DIM2];
+  
+   for (pelem = FIRSTELEMENT(tGrid);pelem != NULL;pelem = pelem->succ){
+      delta[0] = sd_p1_nc_delta(pelem,nu,bb0,bb1,TAU_VARIABLE,0);
+      delta[1] = sd_p1_nc_delta(pelem,nu,bb0,bb1,TAU_VARIABLE,1);
+      delta[2] = sd_p1_nc_delta(pelem,nu,bb0,bb1,TAU_VARIABLE,2);
+      if ((delta[0] > 0.)||(delta[1] > 0.)||(delta[2] > 0.)){
+         NODES_OF_ELEMENT(n0,n1,n2,pelem);
+         VERTICES_OF_ELEMENT(x0,x1,x2,pelem);
+         V_NODE_VALUES(n0,n1,n2,bb0,bb1,bb_0,bb_1,bb_2)
+         points(x0,x1,x2,x001,x002,x110,x112,x220,x221,x012);
+         POINT_VALUES_10(x0,x1,x2,x001,x002,x110,x112,x220,x221,x012,
+                         f0,f1,f2,f001,f002,f110,f112,f220,f221,f012,rhs)
+         ndetB = barycentric_coordinates(x0,x1,x2,b);
+         t0[0] = DOT(b[0],bb_0);
+         t0[1] = DOT(b[0],bb_1);
+         t0[2] = DOT(b[0],bb_2);
+         t1[0] = DOT(b[1],bb_0);
+         t1[1] = DOT(b[1],bb_1);
+         t1[2] = DOT(b[1],bb_2);
+         t2[0] = DOT(b[2],bb_0);
+         t2[1] = DOT(b[2],bb_1);
+         t2[2] = DOT(b[2],bb_2);
+         s = delta[0]*f0 + delta[1]*f1 + delta[2]*f2; 
+         z = (delta[0]+delta[1]+delta[2])/3.*(f012+f012);
+         NDS(n0,f) += CONV_RHS_INT_L0_P1(t0[0],t0[1],t0[2],
+                                  f0*delta[0],f1*delta[1],f2*delta[2],
+                                  (2.*delta[0]+delta[1])/3.*f001,
+                                  (2.*delta[0]+delta[2])/3.*f002,
+                                  (2.*delta[1]+delta[0])/3.*f110,
+                                  (2.*delta[1]+delta[2])/3.*f112,
+                                  (2.*delta[2]+delta[0])/3.*f220,
+                                  (2.*delta[2]+delta[1])/3.*f221,
+                                  z/2.,s,z)*ndetB;
+         NDS(n1,f) += CONV_RHS_INT_L0_P1(t1[0],t1[1],t1[2],
+                                  f0*delta[0],f1*delta[1],f2*delta[2],
+                                  (2.*delta[0]+delta[1])/3.*f001,
+                                  (2.*delta[0]+delta[2])/3.*f002,
+                                  (2.*delta[1]+delta[0])/3.*f110,
+                                  (2.*delta[1]+delta[2])/3.*f112,
+                                  (2.*delta[2]+delta[0])/3.*f220,
+                                  (2.*delta[2]+delta[1])/3.*f221,
+                                  z/2.,s,z)*ndetB;
+          NDS(n2,f) += CONV_RHS_INT_L0_P1(t2[0],t2[1],t2[2],
+                                  f0*delta[0],f1*delta[1],f2*delta[2],
+                                  (2.*delta[0]+delta[1])/3.*f001,
+                                  (2.*delta[0]+delta[2])/3.*f002,
+                                  (2.*delta[1]+delta[0])/3.*f110,
+                                  (2.*delta[1]+delta[2])/3.*f112,
+                                  (2.*delta[2]+delta[0])/3.*f220,
+                                  (2.*delta[2]+delta[1])/3.*f221,
+                                  z/2.,s,z)*ndetB;
+      }
+   }
+}
+
 void add_p1c_sd_rhs_term_quadr(tGrid,f,bb0,bb1,react,rhs,eps,
                                u,space,sc_type,par1,par2,sd_tau,qr)
 GRID *tGrid;
@@ -15874,6 +17125,79 @@ FLOAT nu, (*rhs)(), (*bb0)(), (*bb1)();
          add_sd_rhs_n_f(vn,vf,f0,f1,f2,f001,f002,f110,f112,f220,f221,f012,ndetB,
                         &NDS(n0,f),&NDS(n1,f),&NDS(n2,f),
                         &FD(fa0,f),&FD(fa1,f),&FD(fa2,f));
+      }
+   }
+}
+
+void scalar_p2c_sdp1c_to_rhs_cubic(tGrid,f,nu,rhs,bb0,bb1)
+GRID *tGrid;
+INT f;
+FLOAT nu, (*rhs)(), (*bb0)(), (*bb1)();
+{
+   NODE *n0, *n1, *n2;
+   FACE *fa0, *fa1, *fa2;
+   ELEMENT *pelem;
+   FLOAT s[SIDES], c[SIDES], vn[SIDES][SIDES], vf[SIDES][SIDES], 
+         *x0, *x1, *x2, x001[DIM], x002[DIM], x110[DIM], x112[DIM], x220[DIM], 
+         x221[DIM], x012[DIM], ndetB, b[DIM2][DIM2],
+         v0[DIM], v1[DIM], v2[DIM], v01[DIM], v02[DIM], v12[DIM], 
+         f0, f1, f2, f001, f002, f110, f112, f220, f221, f012, delta[DIM2];
+
+   for (pelem = FIRSTELEMENT(tGrid); pelem != NULL; pelem = pelem->succ){
+      NODES_OF_ELEMENT(n0,n1,n2,pelem);
+      delta[0] = sd_p1c_delta(pelem,nu,bb0,bb1,TAU_VARIABLE,n0);
+      delta[1] = sd_p1c_delta(pelem,nu,bb0,bb1,TAU_VARIABLE,n1);
+      delta[2] = sd_p1c_delta(pelem,nu,bb0,bb1,TAU_VARIABLE,n2);
+      if ((delta[0] > 0.) || (delta[1] > 0.) || (delta[2] > 0.)){
+         NODES_OF_ELEMENT(n0,n1,n2,pelem);
+         FACES_OF_ELEMENT(fa0,fa1,fa2,pelem);
+         VERTICES_OF_ELEMENT(x0,x1,x2,pelem);
+         p2cv_dofs(pelem,v0,v1,v2,v01,v02,v12,bb0,bb1);
+         points(x0,x1,x2,x001,x002,x110,x112,x220,x221,x012);
+         POINT_VALUES_10(x0,x1,x2,x001,x002,x110,x112,x220,x221,x012,
+                         f0,f1,f2,f001,f002,f110,f112,f220,f221,f012,rhs)
+         ndetB = barycentric_coordinates(x0,x1,x2,b);
+         compute_vn_vf_s_c(v0,v1,v2,v01,v02,v12,b,vn,vf,s,c);
+         add_sd_p1_nc_rhs_n_f(vn,vf,f0,f1,f2,f001,f002,f110,f112,f220,f221,f012,
+                              ndetB,delta[0],delta[1],delta[2],
+                              &NDS(n0,f),&NDS(n1,f),&NDS(n2,f),
+                              &FD(fa0,f),&FD(fa1,f),&FD(fa2,f));
+      }
+   }
+}
+
+void scalar_p2c_sdp1nc_to_rhs_cubic(tGrid,f,nu,rhs,bb0,bb1)
+GRID *tGrid;
+INT f;
+FLOAT nu, (*rhs)(), (*bb0)(), (*bb1)();
+{
+   NODE *n0, *n1, *n2;
+   FACE *fa0, *fa1, *fa2;
+   ELEMENT *pelem;
+   FLOAT s[SIDES], c[SIDES], vn[SIDES][SIDES], vf[SIDES][SIDES], 
+         *x0, *x1, *x2, x001[DIM], x002[DIM], x110[DIM], x112[DIM], x220[DIM], 
+         x221[DIM], x012[DIM], ndetB, b[DIM2][DIM2],
+         v0[DIM], v1[DIM], v2[DIM], v01[DIM], v02[DIM], v12[DIM], 
+         f0, f1, f2, f001, f002, f110, f112, f220, f221, f012, delta[DIM2];
+
+   for (pelem = FIRSTELEMENT(tGrid); pelem != NULL; pelem = pelem->succ){
+      delta[0] = sd_p1_nc_delta(pelem,nu,bb0,bb1,TAU_VARIABLE,0);
+      delta[1] = sd_p1_nc_delta(pelem,nu,bb0,bb1,TAU_VARIABLE,1);
+      delta[2] = sd_p1_nc_delta(pelem,nu,bb0,bb1,TAU_VARIABLE,2);
+      if ((delta[0] > 0.) || (delta[1] > 0.) || (delta[2] > 0.)){
+         NODES_OF_ELEMENT(n0,n1,n2,pelem);
+         FACES_OF_ELEMENT(fa0,fa1,fa2,pelem);
+         VERTICES_OF_ELEMENT(x0,x1,x2,pelem);
+         p2cv_dofs(pelem,v0,v1,v2,v01,v02,v12,bb0,bb1);
+         points(x0,x1,x2,x001,x002,x110,x112,x220,x221,x012);
+         POINT_VALUES_10(x0,x1,x2,x001,x002,x110,x112,x220,x221,x012,
+                         f0,f1,f2,f001,f002,f110,f112,f220,f221,f012,rhs)
+         ndetB = barycentric_coordinates(x0,x1,x2,b);
+         compute_vn_vf_s_c(v0,v1,v2,v01,v02,v12,b,vn,vf,s,c);
+         add_sd_p1_nc_rhs_n_f(vn,vf,f0,f1,f2,f001,f002,f110,f112,f220,f221,f012,
+                              ndetB,delta[0],delta[1],delta[2],
+                              &NDS(n0,f),&NDS(n1,f),&NDS(n2,f),
+                              &FD(fa0,f),&FD(fa1,f),&FD(fa2,f));
       }
    }
 }
@@ -17186,8 +18510,19 @@ INT f, t, type, space, structure, degree;
                    add_sd_rhs_p1c_urbanek(tGrid, f, nu, rhs0, bb0, bb1);
                 else if (structure == SCALAR && degree == 2)
                    add_sd_rhs_p1c_urbanek(tGrid, f, nu, rhs0, bb0, bb1);
-                else if (structure == SCALAR && degree == 3)
-                   scalar_p1c_sd_to_rhs_cubic(tGrid,f,nu,rhs0,bb0,bb1);
+                else if (structure == SCALAR && degree == 3){
+                   if (TAU_SPACE == P0){
+                      scalar_p1c_sd_to_rhs_cubic(tGrid,f,nu,rhs0,bb0,bb1);
+                   }
+                   else if (TAU_SPACE == P1C){
+                      scalar_p1c_sdp1c_to_rhs_cubic(tGrid,f,nu,rhs0,bb0,bb1);
+                   }
+                   else if (TAU_SPACE == P1_NC){
+                      scalar_p1c_sdp1nc_to_rhs_cubic(tGrid,f,nu,rhs0,bb0,bb1);
+                   }
+                   else
+                      eprintf("Error: add_sd_rhs not available.\n");
+                }   
                 else
                    eprintf("Error: add_sd_rhs not available.\n");      
         break;
@@ -17196,8 +18531,19 @@ INT f, t, type, space, structure, degree;
                 else
                    eprintf("Error: add_sd_rhs not available.\n");      
         break;
-   case P2C:    if (structure == SCALAR && degree == 3)
-                   scalar_p2c_sd_to_rhs_cubic(tGrid,f,nu,rhs0,bb0,bb1);
+   case P2C:    if (structure == SCALAR && degree == 3){
+                   if (TAU_SPACE == P0){
+                      scalar_p2c_sd_to_rhs_cubic(tGrid,f,nu,rhs0,bb0,bb1);
+                   }
+                   else if (TAU_SPACE == P1C){
+                      scalar_p2c_sdp1c_to_rhs_cubic(tGrid,f,nu,rhs0,bb0,bb1);
+                   }
+                   else if (TAU_SPACE == P1_NC){
+                      scalar_p2c_sdp1nc_to_rhs_cubic(tGrid,f,nu,rhs0,bb0,bb1);
+                   }
+                   else
+                      eprintf("Error: add_sd_rhs not available.\n");
+                }
                 else
                    eprintf("Error: add_sd_rhs not available.\n");      
         break;

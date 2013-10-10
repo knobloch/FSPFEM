@@ -207,6 +207,12 @@
 
 #endif
 
+
+
+
+
+
+
 #if P_SPACE == NONE
 
 #if U_SPACE==P1_NC
@@ -235,10 +241,10 @@
 #if PERIODIC_BC == YES
 #define DATA_S          136
 #else
-#define DATA_S          520
+#define DATA_S          8
 #endif
 #define F_DATA          16
-#define E_DATA          (2|E_TAU|E_TAU_SOLD)
+#define E_DATA          (5|E_TAU|E_TAU_SOLD)
 #define T_FOR_BC        2
 
 #elif (U_SPACE == P1C_ELBUB) && (U_STRUCTURE == SCALAR)
@@ -302,7 +308,7 @@
 #define DATA_S          15
 #define N_DATA          73 
 #define F_DATA          273
-#define E_DATA          0
+#define E_DATA          (5|E_TAU|E_TAU_SOLD)
 #define T_FOR_BC        2
 
 #elif U_SPACE == Q1ROT
