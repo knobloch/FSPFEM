@@ -1,6 +1,7 @@
 /*
 
 POZOR:
+POZOR:
 
 PRI GENEROVANI LAPLACEOVY MATICE BY SE MELO VSUDE PRICITAT - 
                                                        VZDY TOMU TAK ALE NENI!!!
