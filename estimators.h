@@ -22,6 +22,8 @@ DOUBLE x;
       return(5.*x-4.5*x*x);
 }
 
+#if N_DATA & SCALAR_NODE_DATA
+
 double res_and_der_based_error_indicator(tGrid,u,eps,bb0,bb1,react,rhs)
 GRID *tGrid;
 FLOAT eps, (*bb0)(), (*bb1)(), (*react)(), (*rhs)();
@@ -96,41 +98,44 @@ INT u, d;  /*  u ... solution at nodes, d ... derivatives at nodes  */
    }
 }
 
+#else
 
+double res_and_der_based_error_indicator(tGrid,u,eps,bb0,bb1,react,rhs)
+GRID *tGrid; FLOAT eps, (*bb0)(), (*bb1)(), (*react)(), (*rhs)(); INT u;
+{  eprintf("Error: res_and_der_based_error_indicator not available.\n"); return(0.);  }
 
+double derivatives_of_res_and_der_based_error_indicator(tGrid,u,d,eps,bb0,bb1,react,rhs)
+GRID *tGrid; FLOAT eps, (*bb0)(), (*bb1)(), (*react)(), (*rhs)(); INT u, d;
+{  eprintf("Error: derivatives_of_res_and_der_based_error_indicator not available.\n"); return(0.);  }
 
-
-
-
-
-
+#endif
 
 DOUBLE dot();
 
- void estimate1(mg)
- MULTIGRID *mg;
- {
-    ELEMENT *pelem;
-    GRID *theGrid;
-    
-    for (theGrid = FIRSTGRID(mg); theGrid != NULL; theGrid = theGrid->finer)
-       for (pelem = FIRSTELEMENT(theGrid); pelem != NULL; pelem = pelem->succ)
-          if (IS_TOP_ELEMENT(pelem)) pelem->eflag = 2;
- }    
+void estimate1(mg)
+MULTIGRID *mg;
+{
+ELEMENT *pelem;
+   GRID *theGrid;
  
- void estimate2(mg)
- MULTIGRID *mg;
- {
-    ELEMENT *pelem;
-    GRID *theGrid;
-    INT i=0;
-    for (theGrid = FIRSTGRID(mg); theGrid != NULL; theGrid = theGrid->finer)
-       for (pelem = FIRSTELEMENT(theGrid); pelem != NULL; pelem = pelem->succ)
-          if (IS_TOP_ELEMENT(pelem)){
-           if(i++<10) pelem->eflag = 2;
-           else pelem->eflag = 0;
-          }
- } 
+   for (theGrid = FIRSTGRID(mg); theGrid != NULL; theGrid = theGrid->finer)
+      for (pelem = FIRSTELEMENT(theGrid); pelem != NULL; pelem = pelem->succ)
+         if (IS_TOP_ELEMENT(pelem)) pelem->eflag = 2;
+}    
+
+void estimate2(mg)
+MULTIGRID *mg;
+{
+   ELEMENT *pelem;
+   GRID *theGrid;
+   INT i=0;
+   for (theGrid = FIRSTGRID(mg); theGrid != NULL; theGrid = theGrid->finer)
+      for (pelem = FIRSTELEMENT(theGrid); pelem != NULL; pelem = pelem->succ)
+         if (IS_TOP_ELEMENT(pelem)){
+          if(i++<10) pelem->eflag = 2;
+          else pelem->eflag = 0;
+         }
+} 
  
 INT is_in_element();
 
@@ -237,9 +242,9 @@ FLOAT x, y;
 
 #else  /*  !(E_DATA & SCALAR_ELEMENT_DATA)  */
 
- void estimate(mg,q,e,f,err)
- MULTIGRID *mg; FLOAT q, (*err)(); INT e,f;
- {  eprintf("Error: estimate not available.\n");  }
+void estimate(mg,q,e,f,err)
+MULTIGRID *mg; FLOAT q, (*err)(); INT e,f;
+{  eprintf("Error: estimate not available.\n");  }
 
 #endif
 
